@@ -15,17 +15,27 @@ contract Staking is ReentrancyGuard {
     event Staked(address indexed user, uint256 indexed amount);
     event WithdrewStake(address indexed user, uint256 indexed amount,uint256 indexed timstamp);
     event RewardsClaimed(address indexed user, uint256 indexed amount);
+    event unboundingPeriodInitiated (address indexed user,uint256 indexed amount, uint256 indexed timestamp );
+
     uint256 public RewardRate=100;
     uint256 public s_totalSupply;
     uint256 public s_lastUpdateTime; // everytime we call stake,withdraw,claim reward we need to update time;
     uint256 public s_rewardPerTokenStored;
     uint256 public unboundingPeriod = 1e18;
     //   uint256 public withdrawTimeStamp;
+    
+        struct entry{
+        uint256 timestamp;
+        uint256 amount;
+        bool notCompleted;
+    }
 
     mapping(address => uint256) s_userStakedAmount;
     mapping(address => uint256) s_rewards;
     mapping(address => uint256) s_userRewardsPerToken_Paid;
     mapping(address => uint256) withdrawTimeStamp;
+    mapping(address => entry[]) userData;
+
 
     error stake__transferFailed();
     error withdraw__transferFailed();
@@ -38,11 +48,18 @@ contract Staking is ReentrancyGuard {
     fallback() external payable {}
 
     modifier updateReward() {
-        s_rewardPerTokenStored = rewardPerToken();
         s_lastUpdateTime = block.timestamp;
+        s_rewardPerTokenStored = rewardPerToken();
         s_rewards[msg.sender] = earned(msg.sender);
         s_userRewardsPerToken_Paid[msg.sender] = s_rewardPerTokenStored;
         _;
+    }
+    function rewardPerTokenUpdate() public returns (uint256){
+        s_rewardPerTokenStored=s_rewardPerTokenStored +
+            (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
+                s_totalSupply);
+        s_lastUpdateTime = block.timestamp;
+                return s_rewardPerTokenStored;
     }
 
     modifier needMoreThanZero() {
@@ -92,16 +109,17 @@ contract Staking is ReentrancyGuard {
         emit Staked(msg.sender, msg.value);
     }
 
-    uint256 public  unstakeTimestamp;
     function unstake(uint256 amount) public {
-            require(s_userStakedAmount[msg.sender] >=0, "No amount staked");
-            unstakeTimestamp=block.timestamp;
-            unboundingPeriod=1000;
-            emit WithdrewStake(msg.sender, amount, block.timestamp);
+        require(s_userStakedAmount[msg.sender] >=0, "No amount staked");
+        s_userStakedAmount[msg.sender] =
+                s_userStakedAmount[msg.sender] -
+                amount;
+        userData[msg.sender].push(entry(block.timestamp,amount,true));
+        emit unboundingPeriodInitiated(msg.sender, amount,block.timestamp);
     }
 
 
-    function withdraw(uint256 amount)
+    function withdraw(uint256 requiredTimestamp)
         external
         updateReward()
         // needMoreThanZero()
@@ -113,9 +131,9 @@ contract Staking is ReentrancyGuard {
         s_totalSupply = s_totalSupply - amount;
         myToken1.burn(msg.sender,amount);
         // emit WithdrewStake(msg.sender, amount);
-        emit RewardsClaimed(msg.sender,amount);
         uint256 rewardAmount = amount + (amount * 10) / 100;
-        ERC20(rewardToken).transfer_(msg.sender, rewardAmount);
+        myToken.transfer_(msg.sender, rewardAmount);
+        emit RewardsClaimed(msg.sender,amount);
         }
     else{
         revert unstakeNot_called();

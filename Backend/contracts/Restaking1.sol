@@ -39,8 +39,8 @@ contract Restaking1 {
 
 
     modifier updateReward() {
-        s_rewardPerTokenStored = rewardPerTokenUpdate();
         s_lastUpdateTime = block.timestamp;
+        s_rewardPerTokenStored = rewardPerToken();
         s_rewards[msg.sender] = earned(msg.sender);
         s_userRewardsPerToken_Paid[msg.sender] = s_rewardPerTokenStored;
         _;
@@ -88,20 +88,21 @@ contract Restaking1 {
         s_rewardPerTokenStored=s_rewardPerTokenStored +
             (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
                 s_totalSupply);
-                return s_rewardPerTokenStored;
         s_lastUpdateTime = block.timestamp;
+                return s_rewardPerTokenStored;
     }
 
     function rewardPerToken() public view returns (uint256) {
         if (s_totalSupply == 0) {
             return s_rewardPerTokenStored;
         }
+        rewardPerTokenUpdate();
         return s_rewardPerTokenStored + (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) / s_totalSupply);
     } 
 
  
     function unstake(uint256 amount) public {
-        require(s_userStakedAmount[msg.sender] >=0, "No amount staked");
+        require(s_userStakedAmount[msg.sender] >=amount, "not enough LST");
         s_userStakedAmount[msg.sender] =
                 s_userStakedAmount[msg.sender] -
                 amount;
