@@ -2,32 +2,41 @@
 pragma solidity ^0.8.20;
 
 import "./Mytoken.sol";
-import "./Mytoken2.sol";
+import "./Mytoken1.sol";
 
-contract Restaking2 {
+contract Restaking1 {
     Mytoken public myToken;
-    Mytoken2 public anotherToken;
-     event Staked(address indexed user, uint256 indexed amount);
+    Mytoken1 public anotherToken;
+    event Staked(address indexed user, uint256 indexed amount);
     event WithdrewStake(address indexed user, uint256 indexed amount,uint256 indexed timestamp);
     event RewardsClaimed(address indexed user, uint256 indexed amount);
-    event unboundingPeriodInitiated (address indexed user,uint256 indexed amount, uint256 indexed timestamp);
+    event unboundingPeriodInitiated (address indexed user,uint256 indexed amount, uint256 indexed timestamp );
     uint256 public RewardRate=100;
     uint256 public s_totalSupply;
     uint256 public s_lastUpdateTime; // everytime we call stake,withdraw,claim reward we need to update time;
     uint256 public s_rewardPerTokenStored;
-
-    mapping(address => uint256) s_userStakedAmount;
-    mapping(address => entry[]) userData;
-    mapping(address => uint256) s_rewards;
-    mapping(address => uint256) s_userRewardsPerToken_Paid;
-    mapping(address => uint256) withdrawTimeStamp;
-    mapping(address=>uint256) public StakersBalance;
+    
+    //   uint256 public withdrawTimeStamp;
 
     struct entry{
         uint256 timestamp;
         uint256 amount;
         bool notCompleted;
     }
+
+    struct requiredData{
+        uint256 timestamp;
+        uint256 amount;
+        bool claimable;
+    }
+
+    mapping(address => uint256) s_userStakedAmount;
+    mapping(address => entry[]) userData;
+    mapping(address => uint256) s_rewards;
+    mapping(address => uint256) s_userRewardsPerToken_Paid;
+    mapping(address => uint256) withdrawTimeStamp;
+    mapping (address=>uint256) public StakersBalance;
+
 
     modifier updateReward() {
         s_rewardPerTokenStored = rewardPerTokenUpdate();
@@ -44,31 +53,32 @@ contract Restaking2 {
     error waitingPeriod_notCompleted();
     error unstakeNot_called();
 
-    constructor(Mytoken _myToken, Mytoken2 _anotherToken) {
+    constructor(Mytoken _myToken, Mytoken1 _anotherToken) {
         myToken = _myToken;
         anotherToken = _anotherToken;
         s_lastUpdateTime = block.timestamp;
+
     }
+
 
     function earned(address account) public view returns (uint256) {
         uint256 currentBalance = s_userStakedAmount[account];
-        uint256 amountPaid = s_userRewardsPerToken_Paid[account];
+        uint256 amountPaid = s_userRewardsPerToken_Paid[account]; // used while claim reward function call
         uint256 currentRewardPerToken = rewardPerToken();
         uint256 pastRewards = s_rewards[account];
-        return
-            ((currentBalance * (currentRewardPerToken - amountPaid)) / 1e18) +
-            pastRewards;
+        return((currentBalance * (currentRewardPerToken - amountPaid)) / 1e18) + pastRewards;
     }
 
     function transferTokens(uint256 _amount) public  {
         s_userStakedAmount[msg.sender] =
-        s_userStakedAmount[msg.sender] +
-            _amount;
+        s_userStakedAmount[msg.sender] + _amount;
         s_totalSupply = s_totalSupply + _amount;
-        try myToken.transfer_(msg.sender, _amount){
-            emit Staked(msg.sender, _amount);
-        }
-         catch {
+
+        // myToken.mint(address(this), _amount);
+        // myToken.burn(msg.sender, _amount);
+        try myToken.transfer_(msg.sender,_amount){
+            emit Staked (msg.sender,_amount);
+        }catch{
             revert stake__transferFailed();
         }
         anotherToken.mint(msg.sender, _amount);
@@ -86,27 +96,23 @@ contract Restaking2 {
         if (s_totalSupply == 0) {
             return s_rewardPerTokenStored;
         }
-        return
-            s_rewardPerTokenStored +
-            (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
-                s_totalSupply);
-    }
+        return s_rewardPerTokenStored + (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) / s_totalSupply);
+    } 
 
+ 
     function unstake(uint256 amount) public {
-            require(s_userStakedAmount[msg.sender] >=amount, unstakeNot_called("Not enough amount staked"));
-            s_userStakedAmount[msg.sender] =
+        require(s_userStakedAmount[msg.sender] >=0, "No amount staked");
+        s_userStakedAmount[msg.sender] =
                 s_userStakedAmount[msg.sender] -
                 amount;
-            userData[msg.sender].push(entry(block.timestamp,amount,true));    
-            emit unboundingPeriodInitiated(msg.sender, amount,block.timestamp);
+        userData[msg.sender].push(entry(block.timestamp,amount,true));    
+        emit unboundingPeriodInitiated(msg.sender, amount,block.timestamp);
     }
 
     function withdraw(uint256 requiredTimestamp)
     payable 
     external
     updateReward()
-        // needMoreThanZero()
-        
     {   
         entry[] memory user=userData[msg.sender];
         uint256 userCount = userData[msg.sender].length;
@@ -121,8 +127,8 @@ contract Restaking2 {
             withdrawTimeStamp[msg.sender] = block.timestamp;
             s_totalSupply = s_totalSupply - amount;
             // emit WithdrewStake(msg.sender, amount);
-            rewardPerToken=rewardPerToken();
-            amount=(amount * rewardPerToken) + amount;
+            uint256 rpt=rewardPerToken();
+            amount=(amount * rpt) + amount;
             myToken.mint(msg.sender, amount);
             emit RewardsClaimed(msg.sender,amount);
             temp[i]=entry(timestamp,amount,false);
@@ -141,8 +147,10 @@ contract Restaking2 {
                 userData[msg.sender][i]=temp[i];
             }
     }
+
+
     function getAnotherTokenBalance() public  view returns (uint256) {
-        return anotherToken.balanceOf(address(this));
+        return myToken.balanceOf(address(this));
     }
 
     function getUserClaimableToken() public view returns(requiredData[] memory) {
@@ -154,25 +162,28 @@ contract Restaking2 {
         bool claimable = block.timestamp - timestamp >= 1000;
         data[i] = requiredData(timestamp, amount, claimable);
     }
-
+    
     return data;
     }
+
     function mintTokensForStacker(uint256 amount) public  {
             myToken.mint(msg.sender, amount);
     }
     function getTotalSupply() public view returns(uint256){
         return s_totalSupply;
     }
-    function getRewardsPerTokenShared() public view returns(uint256){
+     function getRewardsPerTokenShared() public view returns(uint256){
         return s_rewardPerTokenStored;
     }
-    function getUserBalance() public view returns(uint256){
+     function getUserBalance() public view returns(uint256){
         return s_userStakedAmount[msg.sender];
     }
-    function getUserRewardsPerToken() public view returns(uint256){
+
+     function getUserRewardsPerToken() public view returns(uint256){
         return s_userRewardsPerToken_Paid[msg.sender];
     }
+
     function getCurrentTimestamp() public view returns(uint256){
-        return block.timestamp ;
+        return block.timestamp;
     }
 }
