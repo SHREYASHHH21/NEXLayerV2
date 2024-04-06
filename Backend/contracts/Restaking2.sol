@@ -115,7 +115,7 @@ contract Restaking2 {
             uint256 timestamp=user[i].timestamp;
             uint256 amount = user[i].amount;
             bool notCompleted = user[i].notCompleted;
-        if( block.timestamp-timestamp>=1 && requiredTimestamp == timestamp && notCompleted){
+        if( block.timestamp-timestamp>=1000 && requiredTimestamp == timestamp && notCompleted){
         try anotherToken.burn(msg.sender, amount) {
             emit WithdrewStake(msg.sender, amount, block.timestamp); 
             withdrawTimeStamp[msg.sender] = block.timestamp;
@@ -151,7 +151,7 @@ contract Restaking2 {
     for (uint256 i = 0; i < userData[msg.sender].length; i++) {
         uint256 timestamp = userData[msg.sender][i].timestamp;
         uint256 amount = userData[msg.sender][i].amount;
-        bool claimable = timestamp - block.timestamp >= 1000;
+        bool claimable = block.timestamp - timestamp >= 1000;
         data[i] = requiredData(timestamp, amount, claimable);
     }
 
