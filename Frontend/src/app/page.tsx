@@ -1,4 +1,3 @@
-import { NavbarDemo } from '@/components/navigation-menu'
 import Button from '@/components/ui/button'
 import GridBackground from '@/components/ui/grid-background'
 import { InfiniteMovingCards } from '@/components/ui/infinite-scroll'
@@ -15,9 +14,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import HomeImage from "@/assets/Home_img.jpeg"
 import Link from 'next/link'
-import { FaGithub, FaInstagram, FaLinkedin } from 'react-icons/fa'
 import TeamMemberCard2 from '@/components/our-team/team'
-import { TypewriterEffect } from '@/components/ui/typewrite-effect'
 import { TextGenerateEffect } from '@/components/ui/text-generate-effect'
 const artwork = [
   BluePrint
@@ -156,7 +153,7 @@ export default function Home() {
     <main className="h-full">
       <ToastContainer />
 
-      <NavbarDemo />
+      
       <GridBackground >
 
         <Spotlight

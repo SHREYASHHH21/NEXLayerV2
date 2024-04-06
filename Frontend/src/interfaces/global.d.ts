@@ -35,3 +35,9 @@ interface Person {
     label: string;
     value: string;
   }
+
+  type TableProps = {
+    accountNumber: string;
+    claimedDate: string;
+    amount: string;
+  };

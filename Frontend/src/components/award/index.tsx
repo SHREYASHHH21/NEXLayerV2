@@ -41,15 +41,15 @@ const Award = () => {
       RestakeData.abiRestake,
       signer
     );
-    const v1=await contractStake.getTotalSupply()
-    const v2=await contractRestake.getTotalSupply()
-  const v3=await contractStake.getRewardsPerTokenShared()
-  const v4=await contractRestake.getRewardsPerTokenShared()
-  const v5=await contractStake.getUserBalance()
-  const v6=await contractRestake.getUserBalance()
+    const v1 = await contractStake.getTotalSupply()
+    const v2 = await contractRestake.getTotalSupply()
+    const v3 = await contractStake.getRewardsPerTokenShared()
+    const v4 = await contractRestake.getRewardsPerTokenShared()
+    const v5 = await contractStake.getUserBalance()
+    const v6 = await contractRestake.getUserBalance()
     setGlobalstakedCFX(ethers.utils.formatEther(v1));
     setGlobalstakedxCFX(ethers.utils.formatEther(v2));
-    setcurrentRewardPerTokenShareStake(String(+ethers.utils.formatEther(v3)*100));
+    setcurrentRewardPerTokenShareStake(String(+ethers.utils.formatEther(v3) * 100));
     setcurrentRewardPerTokenShareReStake(ethers.utils.formatEther(v4));
     setuserStakedCFX(ethers.utils.formatEther(v5))
     setuserStakedxCFX(ethers.utils.formatEther(v6));
@@ -106,7 +106,7 @@ const Award = () => {
 
   const stats = [
     { id: 1, name: 'CFX staked', value: GlobalstakedCFX },
-    { id: 2, name: 'xCFX staked', value:GlobalstakedxCFX },
+    { id: 2, name: 'xCFX staked', value: GlobalstakedxCFX },
     { id: 3, name: 'Reward Per Token Share (CFX)', value: currentRewardPerTokenShareStake },
     { id: 3, name: 'Reward Per Token Share (xCFX)', value: currentRewardPerTokenShareReStake },
   ]
@@ -114,7 +114,15 @@ const Award = () => {
     <div className='h-full flex flex-col'>
       <Statistics stats={stats} />
       <div className="w-full md:w-11/12  grid grid-cols-1 sm:grid-cols-2 p-2 justify-center gap-4 items-stretch sm:mt-auto sm:grow max-w-[100%] mx-auto">
-        <AwardDetails token={token1} award={userStakedCFX} stake={stake} setStake={setStake} stakeError={stakeError} period={"1"} callback={handleUnstakeCFX} />
+        <AwardDetails
+          token={token1}
+          award={userStakedCFX}
+          stake={stake}
+          setStake={setStake}
+          stakeError={stakeError}
+          period={"1"}
+          callback={handleUnstakeCFX}
+        />
 
         <AwardDetails token={token2} award={userStakedxCFX} stake={stake} setStake={setStake} stakeError={stakeError} period={"1"} callback={handleUnstakeXCFX} />
       </div>
@@ -196,7 +204,7 @@ const AwardDetails: React.FC<AwardDetailsProps> = ({ token, award, stake, setSta
           </div>
         </HoverPopover>
       </div>
-      <Table1Presentation />
+      {/* <Table1Presentation /> */}
 
     </div>
   );

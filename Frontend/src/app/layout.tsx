@@ -2,6 +2,8 @@ import { cn } from '@/utils/cn'
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { NavbarDemo } from '@/components/navigation-menu'
+import { MetaMaskProvider } from '@/providers/metamask-context'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,9 +19,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
- 
+
     <html lang="en">
-      <body className={cn(inter.className,"")}>{children}</body>
+      <MetaMaskProvider>
+        <body className={cn(inter.className, "")}>
+          <NavbarDemo />
+          {children}
+        </body>
+      </MetaMaskProvider>
     </html>
 
   )

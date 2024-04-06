@@ -16,6 +16,7 @@ import { RiExchangeLine } from "react-icons/ri";
 import { toast } from 'react-toastify';
 import { MultiStepLoader as Loader } from "@/components/multi-step-loader";
 import { TbTransfer } from "react-icons/tb";
+import ClaimTrx from '../claim-transaction';
 
 declare var window: any
 const loadingStates = [
@@ -56,15 +57,12 @@ const Stake: React.FC = () => {
 
 
   const [loading, setLoading] = useState(false);
-  const [stake, setStake] = useState<number | undefined>();
   const [ETH, setETH] = useState<number | undefined>();
   const [xETH, setxETH] = useState<number | undefined>();
 
   const [installMetaMask, setInstallMetaMask] = useState<boolean>(false);
-  const [award, setAward] = useState<number>(0);
   const [balance, setBalance] = useState<number>(0.002259);
   const [availableBalance, setAvailableBalance] = useState<number>(0);
-  const [walletAddress, setWalletAddress] = useState<string>("");
   const [stakeError, setStakeError] = useState("");
   const [conversionRate] = useState<number>(0.93);
 
@@ -73,28 +71,29 @@ const Stake: React.FC = () => {
   const [provider, setProvider] = useState<ethers.providers.Web3Provider | undefined>(undefined)
   const handleClose = () => setOpen(false);
   const handleConfirm = async () => {
-    try {
-      if (window.ethereum !== "undefined") {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
 
-        const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
-        const amountWei = ethers.utils.parseEther(stake?.toString() ?? "0");
-        let txn = await contract.stake({ value: amountWei })
+    // try {
+    //   if (window.ethereum !== "undefined") {
+    //     const provider = new ethers.providers.Web3Provider(window.ethereum);
+    //     await provider.send("eth_requestAccounts", []);
+    //     const signer = provider.getSigner();
 
-        await listenForTransactionMined(txn, provider);
-        console.log("stakeds successfully")
-        // toast.success("Staked successfully !!!");
-        console.log("Done");
+    //     const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
+    //     const amountWei = ethers.utils.parseEther(ETH?.toString() ?? "0");
+    //     let txn = await contract.stake({ value: amountWei })
 
-      } else {
-        console.log("Please Connect Wallet !!!");
-      }
-    } catch (error) {
-      // toast.warning("Please enter the amount");
-      console.log(error);
-    }
+    //     await listenForTransactionMined(txn, provider);
+    //     console.log("stakeds successfully")
+    //     // toast.success("Staked successfully !!!");
+    //     console.log("Done");
+
+    //   } else {
+    //     console.log("Please Connect Wallet !!!");
+    //   }
+    // } catch (error) {
+    //   // toast.warning("Please enter the amount");
+    //   console.log(error);
+    // }
 
     setOpen(false);
   }
@@ -112,7 +111,6 @@ const Stake: React.FC = () => {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-        setWalletAddress(accounts[0]);
         setProvider(provider);
       } catch (error) {
         setInstallMetaMask(true)
@@ -124,8 +122,8 @@ const Stake: React.FC = () => {
   }
 
   useEffect(() => {
-    SetProvider()
-getBalance()
+    // SetProvider()
+    getBalance()
   }, [])
 
 
@@ -145,39 +143,39 @@ getBalance()
     }
   }
   const handleAutoRestake = async () => {
-    try {
-      if (window.ethereum !== "undefined") {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
+    // try {
+    //   if (window.ethereum !== "undefined") {
+    //     const provider = new ethers.providers.Web3Provider(window.ethereum);
+    //     await provider.send("eth_requestAccounts", []);
+    //     const signer = provider.getSigner();
 
-        const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
+    //     const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
 
-        const amountWei = ethers.utils.parseEther((stake)?.toString() ?? "0");
+    //     const amountWei = ethers.utils.parseEther((ETH)?.toString() ?? "0");
 
-        const transaction = await contract.stake({ value: amountWei });
-        const receipt = await transaction.wait();
-        console.log("Transaction confirmed in block:", receipt.blockNumber);
+    //     const transaction = await contract.stake({ value: amountWei });
+    //     const receipt = await transaction.wait();
+    //     console.log("Transaction confirmed in block:", receipt.blockNumber);
 
-        await listenForTransactionMined(transaction, provider);
-        console.log("Unstaked successfully !!!");
+    //     await listenForTransactionMined(transaction, provider);
+    //     console.log("Unstaked successfully !!!");
 
-        const contractRestake = new ethers.Contract(RestakeData.addressRestake, RestakeData.abiRestake, signer);
+    //     const contractRestake = new ethers.Contract(RestakeData.addressRestake, RestakeData.abiRestake, signer);
 
-        let txn = await contractRestake.transferTokens(amountWei);
-        // let txn = await contractRestake.methods.transferTokens(amountWei).call();
-        await listenForTransactionMined(txn, provider);
-        console.log("Unstaked successfully !!!");
-        setLoading(false);
+    //     let txn = await contractRestake.transferTokens(amountWei);
+    //     // let txn = await contractRestake.methods.transferTokens(amountWei).call();
+    //     await listenForTransactionMined(txn, provider);
+    //     console.log("Unstaked successfully !!!");
+    //     setLoading(false);
 
-      } else {
-        toast.info("Please Connect Wallet !!!")
-        console.log("Please Connect Wallet !!!");
-      }
-    } catch (error) {
-      setLoading(false);
-      toast.warning(error as any);
-    }
+    //   } else {
+    //     toast.info("Please Connect Wallet !!!")
+    //     console.log("Please Connect Wallet !!!");
+    //   }
+    // } catch (error) {
+    //   setLoading(false);
+    //   toast.warning(error as any);
+    // }
 
   }
   const getBalance = async () => {
@@ -192,6 +190,8 @@ getBalance()
   useEffect(() => {
     // getBalance()
   }, [])
+
+const [staked,setStaked] = useState<number>(0)
 
   return (
     <>
@@ -294,7 +294,7 @@ getBalance()
               onMouseLeave={() => setVisible(false)}
               className="p-[2px] rounded-lg transition duration-300 group/input w-full"
             >
-              
+
               <TextInput
                 onChange={(e) => { if (+e.target.value >= 0) { setETH(Number(e.target.value as any) / conversionRate); setxETH((e.target.value as any)) } }}
                 type="number"
@@ -332,6 +332,7 @@ getBalance()
             )
           }
         </div>
+        {/* <ClaimTrx token='token1' award='1' callback={()=>{}} period='1' setStake={setStaked} stake={staked}    /> */}
 
 
       </div>
