@@ -113,27 +113,25 @@ contract Staking is ReentrancyGuard {
             s_userStakedAmount[msg.sender] -
             amount;
         s_totalSupply = s_totalSupply - amount;
-        myToken.burn(msg.sender,amount);
         // emit WithdrewStake(msg.sender, amount);
         emit RewardsClaimed(msg.sender,amount);
-        myToken.mint(msg.sender, (((amount * (1)) / 10) + amount));
-    }
+        uint256 rewardAmount = amount + (amount * 10) / 100;
+        ERC20(rewardToken).transfer_(msg.sender, rewardAmount);
+        }
     else{
         revert unstakeNot_called();
     }
     }
-
     function getTotalSupply() public view returns(uint256){
         return s_totalSupply;
     }
-     function getRewardsPerTokenShared() public view returns(uint256){
+    function getRewardsPerTokenShared() public view returns(uint256){
         return s_rewardPerTokenStored;
     }
-     function getUserBalance() public view returns(uint256){
+    function getUserBalance() public view returns(uint256){
         return s_userStakedAmount[msg.sender];
     }
-
-     function getUserRewardsPerToken() public view returns(uint256){
+    function getUserRewardsPerToken() public view returns(uint256){
         return s_userRewardsPerToken_Paid[msg.sender];
     }
 

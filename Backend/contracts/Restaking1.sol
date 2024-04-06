@@ -92,7 +92,7 @@ contract Restaking1 {
         s_totalSupply = s_totalSupply - amount;
         emit RewardsClaimed(msg.sender, amount);
         myToken.mint(msg.sender, (((amount * (1)) / 10) + amount));
-        myToken.burn(msg.sender,amount);
+        myToken1.burn(msg.sender,amount);
     }
     else{
         revert unstakeNot_called();
