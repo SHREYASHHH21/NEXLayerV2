@@ -159,10 +159,10 @@ contract Restaking1 {
     for (uint256 i = 0; i < userData[msg.sender].length; i++) {
         uint256 timestamp = userData[msg.sender][i].timestamp;
         uint256 amount = userData[msg.sender][i].amount;
-        bool claimable = timestamp - block.timestamp >= 1000;
+        bool claimable = block.timestamp - timestamp >= 1000;
         data[i] = requiredData(timestamp, amount, claimable);
     }
-
+    
     return data;
     }
 
