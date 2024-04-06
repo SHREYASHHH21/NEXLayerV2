@@ -26,13 +26,13 @@ contract Staking is ReentrancyGuard {
     mapping(address => uint256) s_rewards;
     mapping(address => uint256) s_userRewardsPerToken_Paid;
     mapping(address => uint256) withdrawTimeStamp;
-    mapping (address=>uint256) public StakersBalance;
+
     error stake__transferFailed();
     error withdraw__transferFailed();
     error claimReward__transferFailed();
     error staking__needMoreThanZero();
     error waitingPeriod_notCompleted();
-     error unstakeNot_called();
+    error unstakeNot_called();
 
     receive() external payable {}
     fallback() external payable {}
@@ -84,13 +84,11 @@ contract Staking is ReentrancyGuard {
         s_userStakedAmount[msg.sender] +
             amount;
         s_totalSupply = s_totalSupply + amount;
-          (bool sent, ) = (payable(address(this))).call{value: msg.value}("");
-        s_userStakedAmount[msg.sender]=msg.value;
-        // StackingAmount=msg.value;
+        (bool sent, ) = (payable(address(this))).call{value: msg.value}("");
         require(sent, "Failed to send Ether");
-        uint256 y=(93)*(msg.value)/100;
-        myToken.mint(msg.sender, y);
-        // emit event
+        uint256 staked_tokens=(93)*(msg.value)/100;
+        myToken.mint(msg.sender, staked_tokens);
+
         emit Staked(msg.sender, msg.value);
     }
 

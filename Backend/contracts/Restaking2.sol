@@ -4,9 +4,9 @@ pragma solidity ^0.8.20;
 import "./Mytoken.sol";
 import "./Mytoken1.sol";
 
-contract Restaking1 {
+contract Restaking2 {
     Mytoken public myToken;
-    Mytoken1 public anotherToken;
+    Mytoken2 public anotherToken;
     event Staked(address indexed user, uint256 indexed amount);
     event WithdrewStake(address indexed user, uint256 indexed amount,uint256 indexed timestamp);
     event RewardsClaimed(address indexed user, uint256 indexed amount);
@@ -35,8 +35,6 @@ contract Restaking1 {
     mapping(address => uint256) s_rewards;
     mapping(address => uint256) s_userRewardsPerToken_Paid;
     mapping(address => uint256) withdrawTimeStamp;
-    mapping (address=>uint256) public StakersBalance;
-
 
     modifier updateReward() {
         s_rewardPerTokenStored = rewardPerTokenUpdate();
