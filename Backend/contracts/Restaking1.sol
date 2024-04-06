@@ -7,24 +7,39 @@ import "./Mytoken1.sol";
 contract Restaking1 {
     Mytoken public myToken;
     Mytoken1 public anotherToken;
-     event Staked(address indexed user, uint256 indexed amount);
-    event WithdrewStake(address indexed user, uint256 indexed amount);
+    event Staked(address indexed user, uint256 indexed amount);
+    event WithdrewStake(address indexed user, uint256 indexed amount,uint256 indexed timestamp);
     event RewardsClaimed(address indexed user, uint256 indexed amount);
+    event unboundingPeriodInitiated (address indexed user,uint256 indexed amount, uint256 indexed timestamp );
     uint256 public RewardRate=100;
     uint256 public s_totalSupply;
     uint256 public s_lastUpdateTime; // everytime we call stake,withdraw,claim reward we need to update time;
     uint256 public s_rewardPerTokenStored;
-    uint256 public unboundingPeriod = 1e18;
+    
     //   uint256 public withdrawTimeStamp;
 
+    struct entry{
+        uint256 timestamp;
+        uint256 amount;
+        bool notCompleted;
+    }
+
+    struct requiredData{
+        uint256 timestamp;
+        uint256 amount;
+        bool claimable;
+    }
+
     mapping(address => uint256) s_userStakedAmount;
+    mapping(address => entry[]) userData;
     mapping(address => uint256) s_rewards;
     mapping(address => uint256) s_userRewardsPerToken_Paid;
     mapping(address => uint256) withdrawTimeStamp;
     mapping (address=>uint256) public StakersBalance;
 
+
     modifier updateReward() {
-        s_rewardPerTokenStored = rewardPerToken();
+        s_rewardPerTokenStored = rewardPerTokenUpdate();
         s_lastUpdateTime = block.timestamp;
         s_rewards[msg.sender] = earned(msg.sender);
         s_userRewardsPerToken_Paid[msg.sender] = s_rewardPerTokenStored;
@@ -36,71 +51,121 @@ contract Restaking1 {
     error claimReward__transferFailed();
     error staking__needMoreThanZero();
     error waitingPeriod_notCompleted();
-     error unstakeNot_called();
+    error unstakeNot_called();
 
     constructor(Mytoken _myToken, Mytoken1 _anotherToken) {
         myToken = _myToken;
         anotherToken = _anotherToken;
+        s_lastUpdateTime = block.timestamp;
+
     }
-     function earned(address account) public view returns (uint256) {
+
+
+    function earned(address account) public view returns (uint256) {
         uint256 currentBalance = s_userStakedAmount[account];
         uint256 amountPaid = s_userRewardsPerToken_Paid[account]; // used while claim reward function call
         uint256 currentRewardPerToken = rewardPerToken();
         uint256 pastRewards = s_rewards[account];
-        return
-            ((currentBalance * (currentRewardPerToken - amountPaid)) / 1e18) +
-            pastRewards;
+        return((currentBalance * (currentRewardPerToken - amountPaid)) / 1e18) + pastRewards;
     }
 
     function transferTokens(uint256 _amount) public  {
         s_userStakedAmount[msg.sender] =
-        s_userStakedAmount[msg.sender] +
-            _amount;
+        s_userStakedAmount[msg.sender] + _amount;
         s_totalSupply = s_totalSupply + _amount;
-          myToken.mint(address(this), _amount);
-        myToken.burn(msg.sender, _amount);
+
+        // myToken.mint(address(this), _amount);
+        // myToken.burn(msg.sender, _amount);
+        try myToken.transfer_(msg.sender,_amount){
+            emit Staked (msg.sender,_amount);
+        }catch{
+            revert stake__transferFailed();
+        }
         anotherToken.mint(msg.sender, _amount);
     }
 
-     function rewardPerToken() public view returns (uint256) {
+    function rewardPerTokenUpdate() public returns (uint256){
+        s_rewardPerTokenStored=s_rewardPerTokenStored +
+            (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
+                s_totalSupply);
+                return s_rewardPerTokenStored;
+        s_lastUpdateTime = block.timestamp;
+    }
+
+    function rewardPerToken() public view returns (uint256) {
         if (s_totalSupply == 0) {
             return s_rewardPerTokenStored;
         }
-        return
-            s_rewardPerTokenStored +
-            (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
-                s_totalSupply);
-    }
+        return s_rewardPerTokenStored + (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) / s_totalSupply);
+    } 
 
-        uint256 public  unstakeTimestamp;
+ 
     function unstake(uint256 amount) public {
-            require(s_userStakedAmount[msg.sender] >=0, "No amount staked");
-            unstakeTimestamp=block.timestamp;
-            unboundingPeriod=1000;
-             emit WithdrewStake(msg.sender,  amount);
+        require(s_userStakedAmount[msg.sender] >=0, "No amount staked");
+        s_userStakedAmount[msg.sender] =
+                s_userStakedAmount[msg.sender] -
+                amount;
+        userData[msg.sender].push(entry(block.timestamp,amount,true));    
+        emit unboundingPeriodInitiated(msg.sender, amount,block.timestamp);
     }
 
-    function withdraw(uint256 amount)
+    function withdraw(uint256 requiredTimestamp)
+    payable 
     external
     updateReward()
-        // needMoreThanZero()
-    {   if( unboundingPeriod!=1e18){
-        withdrawTimeStamp[msg.sender] = block.timestamp;
-        s_userStakedAmount[msg.sender] =
-            s_userStakedAmount[msg.sender] -
-            amount;
-        s_totalSupply = s_totalSupply - amount;
-        emit RewardsClaimed(msg.sender, amount);
-        myToken.mint(msg.sender, (((amount * (1)) / 10) + amount));
-        myToken1.burn(msg.sender,amount);
+    {   
+        entry[] memory user=userData[msg.sender];
+        uint256 userCount = userData[msg.sender].length;
+        entry[] memory temp = new entry[](userCount);
+        for(uint256 i =0 ; i < userCount; i++ ){
+            uint256 timestamp=user[i].timestamp;
+            uint256 amount = user[i].amount;
+            bool notCompleted = user[i].notCompleted;
+        if( block.timestamp-timestamp>=1000 && requiredTimestamp == timestamp && notCompleted){
+        try anotherToken.burn(msg.sender, amount) {
+            emit WithdrewStake(msg.sender, amount, block.timestamp); 
+            withdrawTimeStamp[msg.sender] = block.timestamp;
+            s_totalSupply = s_totalSupply - amount;
+            // emit WithdrewStake(msg.sender, amount);
+            uint256 rpt=rewardPerToken();
+            amount=(amount * rpt) + amount;
+            myToken.mint(msg.sender, amount);
+            emit RewardsClaimed(msg.sender,amount);
+            temp[i]=entry(timestamp,amount,false);
+        } catch {
+            temp[i]=(entry(timestamp,amount,notCompleted));
+            emit WithdrewStake(msg.sender,amount,timestamp);
+            revert withdraw__transferFailed(); 
+
+        }
+        }
+        else{
+            temp[i]=entry(timestamp,amount,notCompleted);
+        }
+        }
+            for(uint256 i = 0; i<userCount ; i++){
+                userData[msg.sender][i]=temp[i];
+            }
     }
-    else{
-        revert unstakeNot_called();
-    }
-    }
+
+
     function getAnotherTokenBalance() public  view returns (uint256) {
         return myToken.balanceOf(address(this));
     }
+
+    function getUserClaimableToken() public view returns(requiredData[] memory) {
+    requiredData[] memory data = new requiredData[](userData[msg.sender].length);
+
+    for (uint256 i = 0; i < userData[msg.sender].length; i++) {
+        uint256 timestamp = userData[msg.sender][i].timestamp;
+        uint256 amount = userData[msg.sender][i].amount;
+        bool claimable = block.timestamp - timestamp >= 1000;
+        data[i] = requiredData(timestamp, amount, claimable);
+    }
+    
+    return data;
+    }
+
     function mintTokensForStacker(uint256 amount) public  {
             myToken.mint(msg.sender, amount);
     }
@@ -116,5 +181,9 @@ contract Restaking1 {
 
      function getUserRewardsPerToken() public view returns(uint256){
         return s_userRewardsPerToken_Paid[msg.sender];
+    }
+
+    function getCurrentTimestamp() public view returns(uint256){
+        return block.timestamp;
     }
 }
