@@ -72,7 +72,7 @@ contract Restaking2 {
             emit Staked(msg.sender, _amount);
         }
          catch Error(string memory reason) {
-            revert stake__transferFailed("not enough LST");
+            revert stake__transferFailed();
         }
         anotherToken.mint(msg.sender, _amount);
     }
@@ -80,8 +80,8 @@ contract Restaking2 {
         s_rewardPerTokenStored=s_rewardPerTokenStored +
             (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
                 s_totalSupply);
-                return s_rewardPerTokenStored;
         s_lastUpdateTime = block.timestamp;
+                return s_rewardPerTokenStored;
     }
     function rewardPerToken() public view returns (uint256) {
         if (s_totalSupply == 0) {
@@ -107,24 +107,24 @@ contract Restaking2 {
     updateReward()
     {   
         entry[] memory user=userData[msg.sender];
-        entry[] memory temp;
-        for(uint256 i =0 ; i < user.size(); i++ ){
+        uint256 userCount = userData[msg.sender].length;
+        entry[] temp;
+        for(uint256 i =0 ; i < userCount; i++ ){
             uint256 timestamp=user[i].timestamp;
             uint256 amount = user[i].amount;
-        if( timestamp-block.timestamp>=1000 & requiredTimestamp == timestamp){
+        if( timestamp-block.timestamp>=1000 && requiredTimestamp == timestamp){
         try anotherToken.burn(msg.sender, amount) {
             emit WithdrewStake(msg.sender, amount, block.timestamp); 
             withdrawTimeStamp[msg.sender] = block.timestamp;
             s_totalSupply = s_totalSupply - amount;
             // emit WithdrewStake(msg.sender, amount);
-            rewardPerToken=rewardPerToken();
-            amount=(amount * rewardPerToken) + amount;
+            uint256 rpt=rewardPerToken();
+            amount=(amount * rpt) + amount;
             myToken.mint(msg.sender, amount);
             emit RewardsClaimed(msg.sender,amount);
         } catch Error(string memory reason) {
             temp.push(entry(timestamp,amount));
-            
-            revert withdraw__transferFailed(" not enough LRT"); 
+            revert withdraw__transferFailed(); 
 
         }
         }
@@ -132,7 +132,7 @@ contract Restaking2 {
             temp.push(entry(timestamp,amount));
         }
         }
-            user[msg.sender]=temp;
+            userData[msg.sender]=temp;
     }
 
     function getAnotherTokenBalance() public  view returns (uint256) {
@@ -140,14 +140,11 @@ contract Restaking2 {
     }
 
     function getUserClaimableToken() public view returns(requiredData[] memory) {
-    requiredData[] memory userLocalData = new requiredData[](userData[msg.sender].length);
-    requiredData[] memory data = new requiredData[](userLocalData.length);
-    for (uint256 i = 0; i < userData[msg.sender].size(); i++) {
-        userLocalData[i] = userData[msg.sender][i];
-    }
-    for (uint256 i = 0; i < userLocalData.length; i++) {
-        uint256 timestamp = userLocalData[i].timestamp;
-        uint256 amount = userLocalData[i].amount;
+    requiredData[] memory data = new requiredData[](userData[msg.sender].length);
+
+    for (uint256 i = 0; i < userData[msg.sender].length; i++) {
+        uint256 timestamp = userData[msg.sender][i].timestamp;
+        uint256 amount = userData[msg.sender][i].amount;
         bool claimable = timestamp - block.timestamp >= 1000;
         data[i] = requiredData(timestamp, amount, claimable);
     }
