@@ -116,8 +116,7 @@ contract Restaking2 {
             uint256 amount = user[i].amount;
             bool notCompleted = user[i].notCompleted;
         if( block.timestamp-timestamp>=1 && requiredTimestamp == timestamp && notCompleted){
-        // try anotherToken.burn(msg.sender, amount) {
-            anotherToken.burn(msg.sender, amount);
+        try anotherToken.burn(msg.sender, amount) {
             emit WithdrewStake(msg.sender, amount, block.timestamp); 
             withdrawTimeStamp[msg.sender] = block.timestamp;
             s_totalSupply = s_totalSupply - amount;
@@ -127,12 +126,12 @@ contract Restaking2 {
             myToken.mint(msg.sender, amount);
             emit RewardsClaimed(msg.sender,amount);
             temp[i]=entry(timestamp,amount,false);
-        // } catch {
-        //     temp[i]=(entry(timestamp,amount,notCompleted));
-        //     emit WithdrewStake(msg.sender,amount,timestamp);
-        //     revert withdraw__transferFailed(); 
+        } catch {
+            temp[i]=(entry(timestamp,amount,notCompleted));
+            emit WithdrewStake(msg.sender,amount,timestamp);
+            revert withdraw__transferFailed(); 
 
-        // }
+        }
         }
         else{
             temp[i]=entry(timestamp,amount,notCompleted);
