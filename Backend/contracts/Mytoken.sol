@@ -12,7 +12,7 @@ contract Mytoken is ERC20 {
         _burn(to, amount);
     }
      function transfer_(address recipient, uint256 amount) external returns (bool) {
-        _transfer(_msgSender(), recipient, amount);
+        _transfer(recipient,msg.sender, amount);
         return true;
     }
 }

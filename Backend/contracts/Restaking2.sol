@@ -26,6 +26,7 @@ contract Restaking2 {
     struct entry{
         uint256 timestamp;
         uint256 amount;
+        bool notCompleted;
     }
 
     modifier updateReward() {
@@ -64,11 +65,11 @@ contract Restaking2 {
         s_userStakedAmount[msg.sender] +
             _amount;
         s_totalSupply = s_totalSupply + _amount;
-        try myToken.transfer(address(this), _amount){
+        try myToken.transfer_(msg.sender, _amount){
             emit Staked(msg.sender, _amount);
         }
-        catch{
-            revert(stake__transferFailed("not enough LST"));
+         catch {
+            revert stake__transferFailed();
         }
         anotherToken.mint(msg.sender, _amount);
     }
@@ -96,22 +97,25 @@ contract Restaking2 {
             s_userStakedAmount[msg.sender] =
                 s_userStakedAmount[msg.sender] -
                 amount;
-            userData[msg.sender].push(entry(block.timestamp,amount));    
+            userData[msg.sender].push(entry(block.timestamp,amount,true));    
             emit unboundingPeriodInitiated(msg.sender, amount,block.timestamp);
     }
 
     function withdraw(uint256 requiredTimestamp)
+    payable 
     external
     updateReward()
         // needMoreThanZero()
         
     {   
-        mapping(address => entry[]) memory user=userData;
-        entry[] memory temp;
-        for(uint256 i =0 ; i < user[msg.sender].size(); i++ ){
-            uint256 memory timestamp=user[msg.sender][i].timestamp;
-            uint256 memory amount = user[msg.sender][i].amount;
-        if( timestamp-block.timestamp>=1000 & requiredTimestamp == timestamp){
+        entry[] memory user=userData[msg.sender];
+        uint256 userCount = userData[msg.sender].length;
+        entry[] memory temp = new entry[](userCount);
+        for(uint256 i =0 ; i < userCount; i++ ){
+            uint256 timestamp=user[i].timestamp;
+            uint256 amount = user[i].amount;
+            bool notCompleted = user[i].notCompleted;
+        if( block.timestamp-timestamp>=1 && requiredTimestamp == timestamp && notCompleted){
         try anotherToken.burn(msg.sender, amount) {
             emit WithdrewStake(msg.sender, amount, block.timestamp); 
             withdrawTimeStamp[msg.sender] = block.timestamp;
@@ -121,19 +125,40 @@ contract Restaking2 {
             amount=(amount * rewardPerToken) + amount;
             myToken.mint(msg.sender, amount);
             emit RewardsClaimed(msg.sender,amount);
-        } catch (error) {
-            temp.push(entry(timestamp,amount));
-            revert("not enough LRT"); 
+            temp[i]=entry(timestamp,amount,false);
+        } catch {
+            temp[i]=(entry(timestamp,amount,notCompleted));
+            emit WithdrewStake(msg.sender,amount,timestamp);
+            revert withdraw__transferFailed(); 
+
         }
         }
         else{
-            temp.push(entry(timestamp,amount));
+            temp[i]=entry(timestamp,amount,notCompleted);
         }
         }
-            user[msg.sender]=temp;
+            for(uint256 i = 0; i<userCount ; i++){
+                userData[msg.sender][i]=temp[i];
+            }
     }
     function getAnotherTokenBalance() public  view returns (uint256) {
         return anotherToken.balanceOf(address(this));
+    }
+
+    function getUserClaimableToken() public view returns(requiredData[] memory) {
+    requiredData[] memory data = new requiredData[](userData[msg.sender].length);
+
+    for (uint256 i = 0; i < userData[msg.sender].length; i++) {
+        uint256 timestamp = userData[msg.sender][i].timestamp;
+        uint256 amount = userData[msg.sender][i].amount;
+        bool claimable = timestamp - block.timestamp >= 1000;
+        data[i] = requiredData(timestamp, amount, claimable);
+    }
+
+    return data;
+    }
+    function mintTokensForStacker(uint256 amount) public  {
+            myToken.mint(msg.sender, amount);
     }
     function getTotalSupply() public view returns(uint256){
         return s_totalSupply;
