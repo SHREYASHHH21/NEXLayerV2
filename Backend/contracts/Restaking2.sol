@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "./Mytoken.sol";
-import "./Mytoken1.sol";
+import "./Mytoken2.sol";
 
 contract Restaking2 {
     Mytoken public myToken;

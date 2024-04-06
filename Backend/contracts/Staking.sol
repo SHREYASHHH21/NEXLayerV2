@@ -83,6 +83,7 @@ contract Staking is ReentrancyGuard {
         if (s_totalSupply == 0) {
             return s_rewardPerTokenStored;
         }
+        rewardPerTokenUpdate();
         return
             s_rewardPerTokenStored +
             (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
