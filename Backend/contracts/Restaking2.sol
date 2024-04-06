@@ -52,7 +52,7 @@ contract Restaking2 {
     error waitingPeriod_notCompleted();
     error unstakeNot_called();
 
-    constructor(Mytoken _myToken, Mytoken1 _anotherToken) {
+    constructor(Mytoken _myToken, Mytoken2 _anotherToken) {
         myToken = _myToken;
         anotherToken = _anotherToken;
         s_lastUpdateTime = block.timestamp;
