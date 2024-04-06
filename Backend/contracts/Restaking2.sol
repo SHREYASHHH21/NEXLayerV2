@@ -133,7 +133,7 @@ contract Restaking2 {
             amount=(amount * rpt) + amount;
             myToken.mint(msg.sender, amount);
             emit RewardsClaimed(msg.sender,amount);
-            temp[i]=entry(timestamp,amount,false);
+            temp[i]=entry(timestamp,0,false);
         } catch {
             temp[i]=(entry(timestamp,amount,notCompleted));
             emit WithdrewStake(msg.sender,amount,timestamp);
