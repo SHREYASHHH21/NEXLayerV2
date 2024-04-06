@@ -5,7 +5,7 @@ import xCFX from '@/assets/xcfx-high-resolution-logo-transparent.svg';
 import { cn } from "@/utils/cn";
 import { ethers } from 'ethers';
 import stakeData from '@/data/stake.json';
-import RestakeData from '@/data/restake.json';
+import RestakeData from '@/data/restake1.json';
 import { useMotionTemplate, useMotionValue, motion } from "framer-motion";
 import { SiBlockchaindotcom } from "react-icons/si";
 import { GiCash } from "react-icons/gi";
@@ -163,7 +163,7 @@ const Stake: React.FC = () => {
         await listenForTransactionMined(transaction, provider);
         console.log("Unstaked successfully !!!");
 
-        const contractRestake = new ethers.Contract(RestakeData.addressRestake, RestakeData.abiRestake, signer);
+        const contractRestake = new ethers.Contract(RestakeData.addressRestake1, RestakeData.abiRestake1, signer);
 
         let txn = await contractRestake.transferTokens(amountWei);
         // let txn = await contractRestake.methods.transferTokens(amountWei).call();

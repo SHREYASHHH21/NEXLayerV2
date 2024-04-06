@@ -7,7 +7,8 @@ import { cn } from "@/utils/cn";
 import ConfirmationDialog from '../alert';
 import { ethers } from 'ethers';
 import stakeData from '@/data/stake.json';
-import restakeData from '@/data/restake.json';
+import restakeData from '@/data/restake1.json';
+import restakeData2 from '@/data/restake2.json';
 import TextInput from '../ui/input/text-input';
 import { useMotionTemplate, useMotionValue, motion } from "framer-motion";
 import { SiBlockchaindotcom } from "react-icons/si";
@@ -195,7 +196,7 @@ const router=useRouter()
         await provider.send("eth_requestAccounts", []);
         const signer = provider.getSigner();
 
-        const contractRestake = new ethers.Contract(restakeData.addressRestake, restakeData.abiRestake, signer);
+        const contractRestake = new ethers.Contract(restakeData.addressRestake1, restakeData.abiRestake1, signer);
 
 
         const amountWei = ethers.utils.parseEther(stake.toString());
@@ -218,6 +219,39 @@ const router=useRouter()
 
     }
   }
+
+  const handleConfirm2 = async () => {
+    try {
+      if (window.ethereum !== "undefined") {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+
+        const contractRestake = new ethers.Contract(restakeData2.addressRestake2, restakeData2.abiRestake2, signer);
+
+
+        const amountWei = ethers.utils.parseEther(stake.toString());
+
+        let txn = await contractRestake.transferTokens(amountWei)
+        // let txn = await contractRestake.methods.transferTokens(amountWei).call();
+
+
+        await listenForTransactionMined(txn, provider);
+        console.log("Staked successfully !!!");
+
+      } else {
+        console.log("Please Connect Wallet !!!");
+      }
+    } catch (error) {
+      // toast.warning("Please enter the amount");
+      console.log(error);
+    } finally {
+      setOpen(false);
+
+    }
+  }
+
+
   const handleReStakeCFX = async () => {
     setOpen(true);
 

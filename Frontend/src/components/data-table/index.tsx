@@ -279,7 +279,7 @@ const handleClaimCFX = async (arr:string[]) => {
     
 }
 }
-function listenForTransactionMined(transactionResponse: any, provider: any) {
+function listenForTransactionMined(transactionResponse: any, provider: ethers.providers.Web3Provider) {
   try {
     //listen for this transaction to be finished
     return new Promise((resolve, reject) => {
