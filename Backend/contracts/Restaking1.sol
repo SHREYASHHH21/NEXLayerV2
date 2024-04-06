@@ -7,9 +7,10 @@ import "./Mytoken1.sol";
 contract Restaking1 {
     Mytoken public myToken;
     Mytoken1 public anotherToken;
-     event Staked(address indexed user, uint256 indexed amount);
-    event WithdrewStake(address indexed user, uint256 indexed amount);
+    event Staked(address indexed user, uint256 indexed amount);
+    event WithdrewStake(address indexed user, uint256 indexed amount,uint256 indexed timestamp);
     event RewardsClaimed(address indexed user, uint256 indexed amount);
+    event UnstakeTimeInitiated (address indexed user,uint256 indexed amount, uint256 indexed timestamp )
     uint256 public RewardRate=100;
     uint256 public s_totalSupply;
     uint256 public s_lastUpdateTime; // everytime we call stake,withdraw,claim reward we need to update time;
@@ -22,6 +23,7 @@ contract Restaking1 {
     mapping(address => uint256) s_userRewardsPerToken_Paid;
     mapping(address => uint256) withdrawTimeStamp;
     mapping (address=>uint256) public StakersBalance;
+    mapping (address => uint256) unstakeTimeRemaining;
 
     modifier updateReward() {
         s_rewardPerTokenStored = rewardPerToken();
@@ -42,49 +44,53 @@ contract Restaking1 {
         myToken = _myToken;
         anotherToken = _anotherToken;
     }
-     function earned(address account) public view returns (uint256) {
+
+
+    function earned(address account) public view returns (uint256) {
         uint256 currentBalance = s_userStakedAmount[account];
         uint256 amountPaid = s_userRewardsPerToken_Paid[account]; // used while claim reward function call
         uint256 currentRewardPerToken = rewardPerToken();
         uint256 pastRewards = s_rewards[account];
-        return
-            ((currentBalance * (currentRewardPerToken - amountPaid)) / 1e18) +
-            pastRewards;
+        return((currentBalance * (currentRewardPerToken - amountPaid)) / 1e18) + pastRewards;
     }
 
     function transferTokens(uint256 _amount) public  {
         s_userStakedAmount[msg.sender] =
-        s_userStakedAmount[msg.sender] +
-            _amount;
+        s_userStakedAmount[msg.sender] + _amount;
         s_totalSupply = s_totalSupply + _amount;
-          myToken.mint(address(this), _amount);
-        myToken.burn(msg.sender, _amount);
+
+        // myToken.mint(address(this), _amount);
+        // myToken.burn(msg.sender, _amount);
+        try mytoken.transfer(address(this),_amount){
+            emit Staked (msg.sender,_amount);
+        }catch(error){
+            revert (stake__transferFailed("not enough ETH!!!"))
+        }
         anotherToken.mint(msg.sender, _amount);
     }
 
-     function rewardPerToken() public view returns (uint256) {
+    function rewardPerToken() public view returns (uint256) {
         if (s_totalSupply == 0) {
             return s_rewardPerTokenStored;
         }
-        return
-            s_rewardPerTokenStored +
-            (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
-                s_totalSupply);
-    }
+        return s_rewardPerTokenStored + (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) / s_totalSupply);
+    } 
 
-        uint256 public  unstakeTimestamp;
+    uint256 public unstakeTimestamp;
+
     function unstake(uint256 amount) public {
-            require(s_userStakedAmount[msg.sender] >=0, "No amount staked");
-            unstakeTimestamp=block.timestamp;
-            unboundingPeriod=1000;
-             emit WithdrewStake(msg.sender,  amount);
+        require(s_userStakedAmount[msg.sender] >=0, "No amount staked");
+        unstakeTimeRemaining[msg.sender]=block.timestamp;
+        // unboundingPeriod=1000;
+        emit UnstakeTimeInitiated(msg.sender,amount,block.timestamp);qw
     }
 
     function withdraw(uint256 amount)
-    external
-    updateReward()
+        external
+        updateReward()
         // needMoreThanZero()
-    {   if( unboundingPeriod!=1e18){
+    {   
+        if( unstakeTimeRemaining[msg.sender]-block.timestamp>=0){
         withdrawTimeStamp[msg.sender] = block.timestamp;
         s_userStakedAmount[msg.sender] =
             s_userStakedAmount[msg.sender] -
@@ -92,12 +98,20 @@ contract Restaking1 {
         s_totalSupply = s_totalSupply - amount;
         emit RewardsClaimed(msg.sender, amount);
         myToken.mint(msg.sender, (((amount * (1)) / 10) + amount));
-        myToken.burn(msg.sender,amount);
+
+        try myToken1.burn(msg.sender, amount) {
+            emit WithdrewStake(msg.sender, amount, block.timestamp);
+        } catch (error) { 
+        revert("Not enough LRT to burn !!!"); // Generic error message (improve for clarity)
+        // Or consider more specific error handling based on the error details
+        } 
     }
     else{
         revert unstakeNot_called();
+        }
     }
-    }
+
+
     function getAnotherTokenBalance() public  view returns (uint256) {
         return myToken.balanceOf(address(this));
     }
@@ -116,5 +130,9 @@ contract Restaking1 {
 
      function getUserRewardsPerToken() public view returns(uint256){
         return s_userRewardsPerToken_Paid[msg.sender];
+    }
+
+    function getCurrentTimestamp() public view returns(uint256){
+        return block.timestamp;
     }
 }

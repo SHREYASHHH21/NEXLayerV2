@@ -113,7 +113,7 @@ contract Staking is ReentrancyGuard {
             s_userStakedAmount[msg.sender] -
             amount;
         s_totalSupply = s_totalSupply - amount;
-        myToken.burn(msg.sender,amount);
+        myToken1.burn(msg.sender,amount);
         // emit WithdrewStake(msg.sender, amount);
         emit RewardsClaimed(msg.sender,amount);
         myToken.mint(msg.sender, (((amount * (1)) / 10) + amount));
