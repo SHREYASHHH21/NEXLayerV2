@@ -38,6 +38,7 @@ contract Restaking2 {
 
     modifier updateReward() {
         s_lastUpdateTime = block.timestamp;
+        rewardPerTokenUpdate();
         s_rewardPerTokenStored = rewardPerToken();
         s_rewards[msg.sender] = earned(msg.sender);
         s_userRewardsPerToken_Paid[msg.sender] = s_rewardPerTokenStored;
@@ -83,6 +84,9 @@ contract Restaking2 {
     }
 
     function rewardPerTokenUpdate() public returns (uint256){
+        if (s_totalSupply == 0) {
+            return s_rewardPerTokenStored;
+        }
         s_rewardPerTokenStored=s_rewardPerTokenStored +
             (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
                 s_totalSupply);
@@ -94,7 +98,6 @@ contract Restaking2 {
         if (s_totalSupply == 0) {
             return s_rewardPerTokenStored;
         }
-        rewardPerTokenUpdate();
         return s_rewardPerTokenStored + (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) / s_totalSupply);
     } 
 

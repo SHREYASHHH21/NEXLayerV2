@@ -11,6 +11,8 @@ contract Staking is ReentrancyGuard {
     //  MyToken public token;
     constructor(Mytoken _token) {
         myToken = _token;
+        s_lastUpdateTime=block.timestamp;
+
     }
     event Staked(address indexed user, uint256 indexed amount);
     event WithdrewStake(address indexed user, uint256 indexed amount,uint256 indexed timstamp);
@@ -29,7 +31,11 @@ contract Staking is ReentrancyGuard {
         uint256 amount;
         bool notCompleted;
     }
-
+    struct requiredData{
+        uint256 timestamp;
+        uint256 amount;
+        bool claimable;
+    }
     mapping(address => uint256) s_userStakedAmount;
     mapping(address => uint256) s_rewards;
     mapping(address => uint256) s_userRewardsPerToken_Paid;
@@ -49,12 +55,16 @@ contract Staking is ReentrancyGuard {
 
     modifier updateReward() {
         s_lastUpdateTime = block.timestamp;
+        rewardPerTokenUpdate();
         s_rewardPerTokenStored = rewardPerToken();
         s_rewards[msg.sender] = earned(msg.sender);
         s_userRewardsPerToken_Paid[msg.sender] = s_rewardPerTokenStored;
         _;
     }
     function rewardPerTokenUpdate() public returns (uint256){
+        if (s_totalSupply == 0) {
+            return s_rewardPerTokenStored;
+        }
         s_rewardPerTokenStored=s_rewardPerTokenStored +
             (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
                 s_totalSupply);
@@ -83,7 +93,6 @@ contract Staking is ReentrancyGuard {
         if (s_totalSupply == 0) {
             return s_rewardPerTokenStored;
         }
-        rewardPerTokenUpdate();
         return
             s_rewardPerTokenStored +
             (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
@@ -96,22 +105,21 @@ contract Staking is ReentrancyGuard {
         needMoreThanZero()
         nonReentrant
         payable 
-    {   
-        uint256 amount=msg.value;
+    {   uint256 amount = msg.value;
         s_userStakedAmount[msg.sender] =
         s_userStakedAmount[msg.sender] +
             amount;
         s_totalSupply = s_totalSupply + amount;
-        (bool sent, ) = (payable(address(this))).call{value: msg.value}("");
-        require(sent, "Failed to send Ether");
-        uint256 staked_tokens=(93)*(msg.value)/100;
+        (bool sent, ) = (payable(address(this))).call{value: amount}("");
+        require(sent, "Failed to take ether");
+        uint256 staked_tokens=(93)*(amount)/100;
         myToken.mint(msg.sender, staked_tokens);
 
-        emit Staked(msg.sender, msg.value);
+        emit Staked(msg.sender, amount);
     }
 
     function unstake(uint256 amount) public {
-        require(s_userStakedAmount[msg.sender] >=0, "No amount staked");
+        require(s_userStakedAmount[msg.sender] >=amount, "not enough eth staked");
         s_userStakedAmount[msg.sender] =
                 s_userStakedAmount[msg.sender] -
                 amount;
@@ -124,27 +132,63 @@ contract Staking is ReentrancyGuard {
         external
         updateReward()
         // needMoreThanZero()
-    {   if( unboundingPeriod!=1e18 && s_userStakedAmount[msg.sender]>=amount){
+    {   
+         entry[] memory user=userData[msg.sender];
+        uint256 userCount = userData[msg.sender].length;
+        entry[] memory temp = new entry[](userCount);
+        for(uint256 i =0 ; i < userCount; i++ ){
+            uint256 timestamp=user[i].timestamp;
+            uint256 amount = user[i].amount;
+            bool notCompleted = user[i].notCompleted;
+        if( block.timestamp-timestamp>=10 && requiredTimestamp == timestamp && notCompleted){
         withdrawTimeStamp[msg.sender] = block.timestamp;
-        s_userStakedAmount[msg.sender] =
-            s_userStakedAmount[msg.sender] -
-            amount;
         s_totalSupply = s_totalSupply - amount;
-        myToken1.burn(msg.sender,amount);
-        // emit WithdrewStake(msg.sender, amount);
-        uint256 rewardAmount = amount + (amount * 10) / 100;
-        myToken.transfer_(msg.sender, rewardAmount);
-        emit RewardsClaimed(msg.sender,amount);
+        try myToken.burn(msg.sender, amount) {
+            emit WithdrewStake(msg.sender, amount, block.timestamp); 
+            withdrawTimeStamp[msg.sender] = block.timestamp;
+            s_totalSupply = s_totalSupply - amount;
+            // emit WithdrewStake(msg.sender, amount);
+            uint256 rpt=rewardPerToken();
+            amount=(amount * rpt) + amount;
+            amount = (amount*100)/93;
+            (bool sent, ) = (payable(msg.sender)).call{value: amount}("");
+            require(sent, "Failed to send Ether");
+            emit RewardsClaimed(msg.sender,amount);
         }
-    else{
-        revert unstakeNot_called();
+        catch {
+            temp[i]=(entry(timestamp,amount,notCompleted));
+            revert withdraw__transferFailed(); 
+        }
+        }
+        else{
+            revert unstakeNot_called();
+        }
+        }
+            for(uint256 i = 0; i<userCount ; i++){
+                userData[msg.sender][i]=temp[i];
+            }
     }
+    function getUserClaimableToken() public view returns(requiredData[] memory) {
+        requiredData[] memory data = new requiredData[](userData[msg.sender].length);
+
+        for (uint256 i = 0; i < userData[msg.sender].length; i++) {
+            uint256 timestamp = userData[msg.sender][i].timestamp;
+            uint256 amount = userData[msg.sender][i].amount;
+            bool claimable = block.timestamp - timestamp >= 10;
+            data[i] = requiredData(timestamp, amount, claimable);
     }
+    
+    return data;
+    }
+
     function getTotalSupply() public view returns(uint256){
         return s_totalSupply;
     }
     function getRewardsPerTokenShared() public view returns(uint256){
         return s_rewardPerTokenStored;
+    }
+    function getBlockTimestamp() public view returns(uint256) {
+        return block.timestamp;
     }
     function getUserBalance() public view returns(uint256){
         return s_userStakedAmount[msg.sender];
