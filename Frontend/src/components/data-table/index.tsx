@@ -4,14 +4,13 @@ import {
   useSortBy,
   usePagination,
 } from "react-table";
-import React, { useMemo,  useCallback, useEffect } from "react";
+import React, { useMemo} from "react";
 import rewardData from "@/data/reward.json";
 import {
   FaSearch,
   FaSortUp,
   FaSortDown,
 } from "react-icons/fa";
-import Image from "next/image";
 import Button from "../ui/button";
 import { ethers } from "ethers";
 declare var window: any
@@ -167,10 +166,14 @@ interface TableComponentProps {
       </div>
     );
   };
+type TableProps = {
+  accountNumber: string;
+  claimedDate: string;
+  amount: string;
+};
 
-
-const Table1: React.FC = () => {
-    const data = useMemo(() => generateData(), []);
+const Table1 = ({data}:{data:TableProps[]}) => {
+    // const data = useMemo(() => generateData(), []);
     const columns = useMemo(getColumns, []);
     const {
       getTableProps,
@@ -244,6 +247,7 @@ const getColumns = () => [
 ];
 
 const handleClaim = (row:any) => {
+  console.log("check ",row)
   const arr:string[]=[]
   row.cells.map((cell:any) => {
     if(cell.value!==undefined) arr.push(cell.value)
@@ -293,29 +297,12 @@ function listenForTransactionMined(transactionResponse: any, provider: ethers.pr
   }
 }
 
-function Table1Presentation() {
-  useEffect(() => {
-    if (window.ethereum) {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      // await provider.send("eth_requestAccounts", []);
-      const signer = provider.getSigner();
-      
-      const contractRestake = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
-      const filter = contractRestake.filters.WithdrewStake();
-      window.addEventListener("WithdrewStake", (e:any) => {
-        console.log(e);
-      })  
-      contractRestake.on(filter, (event) => {
-        // Handle the received event data
-        console.log("wroking ")
-        console.log(event);
-      })
-     
-    }
-  }, []);
+function Table1Presentation({data}: {data:TableProps[]}) {
+
   return (
-    <div className="flex flex-col  py-4 sm:py-0 mt-8 overflow-y-scroll w-full grow h-[200px] max-h-[500px]">
-      <Table1 />
+    <div className="flex flex-col  py-4 sm:py-0 mt-8 overflow-y-scroll w-full grow h-[200px] max-h-[500px] ">
+        
+      <Table1 data={data} />
     </div>
   );
 }

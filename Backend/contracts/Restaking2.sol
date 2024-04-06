@@ -52,7 +52,7 @@ contract Restaking2 {
     error waitingPeriod_notCompleted();
     error unstakeNot_called();
 
-    constructor(Mytoken _myToken, Mytoken1 _anotherToken) {
+    constructor(Mytoken _myToken, Mytoken2 _anotherToken) {
         myToken = _myToken;
         anotherToken = _anotherToken;
         s_lastUpdateTime = block.timestamp;
@@ -133,7 +133,7 @@ contract Restaking2 {
             amount=(amount * rpt) + amount;
             myToken.mint(msg.sender, amount);
             emit RewardsClaimed(msg.sender,amount);
-            temp[i]=entry(timestamp,amount,false);
+            temp[i]=entry(timestamp,0,false);
         } catch {
             temp[i]=(entry(timestamp,amount,notCompleted));
             emit WithdrewStake(msg.sender,amount,timestamp);
