@@ -28,11 +28,6 @@ contract Restaking2 {
         uint256 amount;
         bool notCompleted;
     }
-    struct requiredData{
-        uint256 timestamp;
-        uint256 amount;
-        bool claimable;
-    }
 
     modifier updateReward() {
         s_rewardPerTokenStored = rewardPerTokenUpdate();
@@ -54,6 +49,7 @@ contract Restaking2 {
         anotherToken = _anotherToken;
         s_lastUpdateTime = block.timestamp;
     }
+
     function earned(address account) public view returns (uint256) {
         uint256 currentBalance = s_userStakedAmount[account];
         uint256 amountPaid = s_userRewardsPerToken_Paid[account];
@@ -77,13 +73,15 @@ contract Restaking2 {
         }
         anotherToken.mint(msg.sender, _amount);
     }
+
     function rewardPerTokenUpdate() public returns (uint256){
         s_rewardPerTokenStored=s_rewardPerTokenStored +
             (((block.timestamp - s_lastUpdateTime) * RewardRate * 1e18) /
                 s_totalSupply);
-        s_lastUpdateTime = block.timestamp;
                 return s_rewardPerTokenStored;
+        s_lastUpdateTime = block.timestamp;
     }
+
     function rewardPerToken() public view returns (uint256) {
         if (s_totalSupply == 0) {
             return s_rewardPerTokenStored;
@@ -95,7 +93,7 @@ contract Restaking2 {
     }
 
     function unstake(uint256 amount) public {
-            if(s_userStakedAmount[msg.sender] <amount){ revert unstakeNot_called();}
+            require(s_userStakedAmount[msg.sender] >=amount, unstakeNot_called("Not enough amount staked"));
             s_userStakedAmount[msg.sender] =
                 s_userStakedAmount[msg.sender] -
                 amount;
@@ -107,6 +105,8 @@ contract Restaking2 {
     payable 
     external
     updateReward()
+        // needMoreThanZero()
+        
     {   
         entry[] memory user=userData[msg.sender];
         uint256 userCount = userData[msg.sender].length;
@@ -121,8 +121,8 @@ contract Restaking2 {
             withdrawTimeStamp[msg.sender] = block.timestamp;
             s_totalSupply = s_totalSupply - amount;
             // emit WithdrewStake(msg.sender, amount);
-            uint256 rpt=rewardPerToken();
-            amount=(amount * rpt) + amount;
+            rewardPerToken=rewardPerToken();
+            amount=(amount * rewardPerToken) + amount;
             myToken.mint(msg.sender, amount);
             emit RewardsClaimed(msg.sender,amount);
             temp[i]=entry(timestamp,amount,false);
@@ -141,7 +141,6 @@ contract Restaking2 {
                 userData[msg.sender][i]=temp[i];
             }
     }
-
     function getAnotherTokenBalance() public  view returns (uint256) {
         return anotherToken.balanceOf(address(this));
     }
