@@ -26,6 +26,7 @@ contract Restaking2 {
     struct entry{
         uint256 timestamp;
         uint256 amount;
+        bool notCompleted;
     }
     struct requiredData{
         uint256 timestamp;
@@ -68,10 +69,10 @@ contract Restaking2 {
         s_userStakedAmount[msg.sender] +
             _amount;
         s_totalSupply = s_totalSupply + _amount;
-        try myToken.transfer(msg.sender, _amount){
+        try myToken.transfer_(msg.sender, _amount){
             emit Staked(msg.sender, _amount);
         }
-         catch Error(string memory reason) {
+         catch {
             revert stake__transferFailed();
         }
         anotherToken.mint(msg.sender, _amount);
@@ -98,22 +99,25 @@ contract Restaking2 {
             s_userStakedAmount[msg.sender] =
                 s_userStakedAmount[msg.sender] -
                 amount;
-            userData[msg.sender].push(entry(block.timestamp,amount));    
+            userData[msg.sender].push(entry(block.timestamp,amount,true));    
             emit unboundingPeriodInitiated(msg.sender, amount,block.timestamp);
     }
 
     function withdraw(uint256 requiredTimestamp)
+    payable 
     external
     updateReward()
     {   
         entry[] memory user=userData[msg.sender];
         uint256 userCount = userData[msg.sender].length;
-        entry[] temp;
+        entry[] memory temp = new entry[](userCount);
         for(uint256 i =0 ; i < userCount; i++ ){
             uint256 timestamp=user[i].timestamp;
             uint256 amount = user[i].amount;
-        if( timestamp-block.timestamp>=1000 && requiredTimestamp == timestamp){
-        try anotherToken.burn(msg.sender, amount) {
+            bool notCompleted = user[i].notCompleted;
+        if( block.timestamp-timestamp>=1 && requiredTimestamp == timestamp && notCompleted){
+        // try anotherToken.burn(msg.sender, amount) {
+            anotherToken.burn(msg.sender, amount);
             emit WithdrewStake(msg.sender, amount, block.timestamp); 
             withdrawTimeStamp[msg.sender] = block.timestamp;
             s_totalSupply = s_totalSupply - amount;
@@ -122,17 +126,21 @@ contract Restaking2 {
             amount=(amount * rpt) + amount;
             myToken.mint(msg.sender, amount);
             emit RewardsClaimed(msg.sender,amount);
-        } catch Error(string memory reason) {
-            temp.push(entry(timestamp,amount));
-            revert withdraw__transferFailed(); 
+            temp[i]=entry(timestamp,amount,false);
+        // } catch {
+        //     temp[i]=(entry(timestamp,amount,notCompleted));
+        //     emit WithdrewStake(msg.sender,amount,timestamp);
+        //     revert withdraw__transferFailed(); 
 
-        }
+        // }
         }
         else{
-            temp.push(entry(timestamp,amount));
+            temp[i]=entry(timestamp,amount,notCompleted);
         }
         }
-            userData[msg.sender]=temp;
+            for(uint256 i = 0; i<userCount ; i++){
+                userData[msg.sender][i]=temp[i];
+            }
     }
 
     function getAnotherTokenBalance() public  view returns (uint256) {
@@ -150,6 +158,9 @@ contract Restaking2 {
     }
 
     return data;
+    }
+    function mintTokensForStacker(uint256 amount) public  {
+            myToken.mint(msg.sender, amount);
     }
     function getTotalSupply() public view returns(uint256){
         return s_totalSupply;
