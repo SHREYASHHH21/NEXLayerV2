@@ -167,7 +167,7 @@ export default function Home() {
                 <span className='bg-gradient-to-r from-blue-600 via-green-500 to-indigo-400 inline-block bg-clip-text text-transparent'>Liquid Dreams , multiple gains</span>
               </div>
               <div className='mt-14 text-[20px] text-gray-300 tracking-wider  '>
-              <TextGenerateEffect words={` Stakewave protocol is built on etherum that introduces restaking, a new primitive in cryptoeconomic security. This primitive enables the reuse of CFX on the consensus layer. Users that stake ETH natively or with a liquid staking token (LST) can opt-in to Stakewave smart contracts to restake their ETH or LST and extend cryptoeconomic security to additional applications on the network to earn additional rewards.`} />
+              <TextGenerateEffect words={` Stakewave protocol is built on etherum that introduces restaking, a new primitive in cryptoeconomic security. This primitive enables the reuse of ETH on the consensus layer. Users that stake ETH natively or with a liquid staking token (LST) can opt-in to Stakewave smart contracts to restake their ETH or LST and extend cryptoeconomic security to additional applications on the network to earn additional rewards.`} />
               </div>
               <Button variant="blackNwhite" className='!mt-12' >
                 <AiFillThunderbolt className='text-lg' />
@@ -182,7 +182,7 @@ export default function Home() {
           <InfiniteMovingCards items={infiniteScrollData} className='mt-16' direction='left' key={"infinite"} pauseOnHover={false} speed='normal' />
           <div className='mt-40'>
             <div className='text-white md:text-6xl text-3xl font-bold mx-auto w-fit capitalize text-center'>
-              How <span className='bg-gradient-to-r from-blue-600 via-green-500 to-indigo-400 inline-block bg-clip-text text-transparent'>NEXLayer</span> Works
+              How <span className='bg-gradient-to-r from-blue-600 via-green-500 to-indigo-400 inline-block bg-clip-text text-transparent'>Stakewave</span> Works
             </div>
             <Artworks artwork={artwork} />
           </div>
