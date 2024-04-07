@@ -19,8 +19,8 @@ import { timeStamp } from 'console';
 declare var window: any
 
 const Award = () => {
-  const token1 = "Conflux";
-  const token2 = "xConflux";
+  const token1 = "Ethereum";
+  const token2 = "xEthereum";
   const award = "1";
   const [userStakedCFX, setuserStakedCFX] = useState<string>("1");
   const [userStakedxCFX, setuserStakedxCFX] = useState<string>("1");
@@ -146,10 +146,10 @@ const Award = () => {
   }
 
   const stats = [
-    { id: 1, name: 'CFX staked', value: GlobalstakedCFX },
-    { id: 2, name: 'xCFX staked', value: GlobalstakedxCFX },
-    { id: 3, name: 'Reward Per Token Share (CFX)', value: currentRewardPerTokenShareStake },
-    { id: 3, name: 'Reward Per Token Share (xCFX)', value: currentRewardPerTokenShareReStake },
+    { id: 1, name: 'ETH staked', value: GlobalstakedCFX },
+    { id: 2, name: 'xETH staked', value: GlobalstakedxCFX },
+    { id: 3, name: 'Reward Per Token Share (ETH)', value: currentRewardPerTokenShareStake },
+    { id: 3, name: 'Reward Per Token Share (xETH)', value: currentRewardPerTokenShareReStake },
   ]
   return (
     <div className='h-full flex flex-col'>

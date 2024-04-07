@@ -167,7 +167,7 @@ export default function Home() {
                 <span className='bg-gradient-to-r from-blue-600 via-green-500 to-indigo-400 inline-block bg-clip-text text-transparent'>Liquid Dreams , multiple gains</span>
               </div>
               <div className='mt-14 text-[20px] text-gray-300 tracking-wider  '>
-              <TextGenerateEffect words={` NEXLayer protocol is built on conflux that introduces restaking, a new primitive in cryptoeconomic security. This primitive enables the reuse of CFX on the consensus layer. Users that stake CFX natively or with a liquid staking token (LST) can opt-in to NEXLayer smart contracts to restake their CFX or LST and extend cryptoeconomic security to additional applications on the network to earn additional rewards.`} />
+              <TextGenerateEffect words={` Stakewave protocol is built on etherum that introduces restaking, a new primitive in cryptoeconomic security. This primitive enables the reuse of CFX on the consensus layer. Users that stake ETH natively or with a liquid staking token (LST) can opt-in to Stakewave smart contracts to restake their ETH or LST and extend cryptoeconomic security to additional applications on the network to earn additional rewards.`} />
               </div>
               <Button variant="blackNwhite" className='!mt-12' >
                 <AiFillThunderbolt className='text-lg' />

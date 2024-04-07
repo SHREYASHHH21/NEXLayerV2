@@ -1,7 +1,7 @@
 [
     {
       "title":"Stake",
-      "quote": "Deposit your CFX on NEXLayer, which gets staked via DVT."
+      "quote": "Deposit your ETH on NEXLayer, which gets staked via DVT."
     },
     {
       "title":"Restake",
@@ -9,10 +9,10 @@
     },
     {
       "title":"Earn",
-      "quote": "Receive xCFX in your wallet. Earn staking rewards,restaked points."
+      "quote": "Receive xETH in your wallet. Earn staking rewards,restaked points."
     },
     {
       "title":"Defi",
-      "quote": "Lend or borrow against your xCFX and multiply your yield."
+      "quote": "Lend or borrow against your xETH and multiply your yield."
     }
   ]

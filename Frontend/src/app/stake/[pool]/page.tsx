@@ -25,22 +25,22 @@ import { reStake1, reStake2 } from '@/utils';
 declare var window: any
 const loadingStates = [
   {
-    text: "Grabbing your CFX",
+    text: "Grabbing your ETH",
   },
   {
-    text: "Staking your CFX",
+    text: "Staking your ETH",
   },
   {
-    text: "Minting your xCFX",
+    text: "Minting your xETH",
   },
   {
-    text: "Restaking your xCFX",
+    text: "Restaking your xETH",
   },
   {
-    text: "Minting lxCFX",
+    text: "Minting lxETH",
   },
   {
-    text: "Sending you lxCFX",
+    text: "Sending you lxETH",
   },
 ];
 

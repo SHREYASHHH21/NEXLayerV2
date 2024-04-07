@@ -21,22 +21,22 @@ import ClaimTrx from '../claim-transaction';
 declare var window: any
 const loadingStates = [
   {
-    text: "Grabbing your CFX",
+    text: "Grabbing your ETH",
   },
   {
-    text: "Staking your CFX",
+    text: "Staking your ETH",
   },
   {
-    text: "Minting your xCFX",
+    text: "Minting your xETH",
   },
   {
-    text: "Restaking your xCFX",
+    text: "Restaking your xETH",
   },
   {
-    text: "Minting lxCFX",
+    text: "Minting lxETH",
   },
   {
-    text: "Sending you lxCFX",
+    text: "Sending you lxETH",
   },
 ];
 
@@ -235,8 +235,8 @@ const [staked,setStaked] = useState<number>(0)
         setOpen={setOpen}
         onCancel={handleClose}
         onConfirm={handleConfirm}
-        title="Stake Conflux"
-        message="Are you sure you want to stake your Conflux? You can recieve your tokens 7 days after unstaking the amount."
+        title="Stake Ethereum"
+        message="Are you sure you want to stake your Ethereum? You can recieve your tokens 7 days after unstaking the amount."
         buttonText="Stake"
       />
       {/* <ConfirmationDialog
@@ -307,7 +307,7 @@ const [staked,setStaked] = useState<number>(0)
           <TbTransfer className='text-[150px] my-auto' />
           <div className='w-full  bg-gradient-to-r from-indigo-500 to-purple-500  flex flex-col gap-4 p-2 rounded-md'>
             <Conflux
-              text='xConflux'
+              text='xEthereum'
               className='h-12 w-12 shrink-0'
               Base_Class='flex items-center gap-2'
               textClass='text-white mt-0 text-[28px]'

@@ -296,8 +296,8 @@ const router=useRouter()
         setOpen={setOpen}
         onCancel={handleClose}
         onConfirm={handleConfirm}
-        title="Stake Conflux"
-        message="Are you sure you want to stake your Conflux? You can recieve your tokens 7 days after unstaking the amount."
+        title="Stake Ethereum"
+        message="Are you sure you want to stake your Ethereum? You can recieve your tokens 7 days after unstaking the amount."
         buttonText="Stake"
       />
 
