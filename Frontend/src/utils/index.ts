@@ -220,7 +220,7 @@ export const nativeUnstake = async(stake:number,listenForTransactionMined:any,se
 }
 
 
-const getUserClaimableData1 = async(listenForTransactionMined:any)=>{
+export const getUserClaimableData1 = async(listenForTransactionMined:any)=>{
      try {
       if (window.ethereum !== "undefined") {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -275,7 +275,7 @@ export const withdraw1 = async(arr:string[],listenForTransactionMined:any,index:
 }
 }
 
-const getUserClaimableData2 = async(listenForTransactionMined:any)=>{
+export const getUserClaimableData2 = async(listenForTransactionMined:any)=>{
      try {
       if (window.ethereum !== "undefined") {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -330,7 +330,7 @@ export const withdraw2 = async(arr:string[],listenForTransactionMined:any,index:
 }
 }
 
-const nativeGetUserClaimableData = async(listenForTransactionMined:any)=>{
+export const nativeGetUserClaimableData = async(listenForTransactionMined:any)=>{
      try {
       if (window.ethereum !== "undefined") {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
