@@ -8,6 +8,9 @@ import Button from "../ui/button";
 import { AiFillThunderbolt } from "react-icons/ai";
 import TextInput from "../ui/input/text-input";
 import { motion } from "framer-motion";
+import {nativeUnstake} from "@/utils"
+import { ethers } from "ethers";
+import { toast } from "react-toastify";
 // import 
 
 interface AwardDetailsProps {
@@ -18,7 +21,8 @@ interface AwardDetailsProps {
   // stakeError: string;
   period: string;
   callback: () => void;
-  data:TableProps[]
+  data:TableProps[];
+  index?:number;
 }
 
 const ClaimTrx: React.FC<AwardDetailsProps> = ({
@@ -29,7 +33,8 @@ const ClaimTrx: React.FC<AwardDetailsProps> = ({
   // stakeError,
   period,
   callback,
-  data
+  data,
+  index
  }) => {
   // css effect code
   const radius = 100; // change this to increase the radius of the hover effect
@@ -43,6 +48,21 @@ const ClaimTrx: React.FC<AwardDetailsProps> = ({
 
     mouseX.set(clientX - left);
     mouseY.set(clientY - top);
+  }
+  function listenForTransactionMined(transactionResponse: any, provider: ethers.providers.Web3Provider) {
+    try {
+      //listen for this transaction to be finished
+      return new Promise((resolve, reject) => {
+        provider.once(transactionResponse.hash, (transactionReciept: any) => {
+          console.log(`Completed with ${transactionReciept.confirmations}`);
+          resolve(transactionReciept);
+        });
+      });
+    } catch (e) {
+      // setLoading(false);
+      toast.error("Transaction failed");
+      console.log(e);
+    }
   }
 
   return (
@@ -67,7 +87,7 @@ const ClaimTrx: React.FC<AwardDetailsProps> = ({
           className="p-[2px] rounded-lg transition duration-300 group/input w-full"
         >
           <TextInput
-            onChange={(e) => { if (+e.target.value > 0) setStake(e.target.value as any) }}
+            onChange={(e) => { if (+e.target.value >= 0) setStake(e.target.value as any) }}
             type="number"
             className={"bg-black rounded-md w-full h-14"}
             value={stake}
@@ -80,7 +100,19 @@ const ClaimTrx: React.FC<AwardDetailsProps> = ({
 
         <Button variant="shimmer" className='py-2 !h-full' onClick={callback} >
           <AiFillThunderbolt className='text-lg' />
-          <div className='font-bold'>Unstake</div>
+          <div className='font-bold'
+          onClick={()=>{
+            if(index){
+              if(index==0){
+
+              }else if (index==1){
+
+              }
+            }else{
+              nativeUnstake(stake,listenForTransactionMined)
+            }
+          }}
+          >Unstake</div>
         </Button>
       </div>
       
@@ -95,7 +127,10 @@ const ClaimTrx: React.FC<AwardDetailsProps> = ({
           </div>
         </HoverPopover>
       </div>
-      <Table1Presentation data={data}  />
+      {
+        data && data.length>0 &&
+       <Table1Presentation data={data}  />
+      }
 
     </div>
   );

@@ -16,6 +16,7 @@ import { ethers } from "ethers";
 declare var window: any
 import stakeData from '@/data/stake.json';
 import { toast } from "react-toastify";
+import { nativeWithdraw, withdraw1, withdraw2 } from "@/utils";
 
 
 
@@ -260,28 +261,32 @@ console.log("CHECK ",arr)
 
 const handleClaimCFX = async (arr:string[]) => {
   // handle unstake CFX
-  try {
-    if(window.ethereum !== "undefined"){
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
+//   try {
+//     if(window.ethereum !== "undefined"){
+//         const provider = new ethers.providers.Web3Provider(window.ethereum);
+//         await provider.send("eth_requestAccounts", []);
+//         const signer = provider.getSigner();
 
-        const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
+//         const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
 
-        const amountWei = ethers.utils.parseEther(arr[0].toString());
+//         const amountWei = ethers.utils.parseEther(arr[0].toString());
         
-        const transaction = await contract.withdraw(amountWei);  
+//         const transaction = await contract.withdraw(amountWei);  
        
-        await listenForTransactionMined(transaction, provider);
-        console.log("Unstaked successfully !!!");
+//         await listenForTransactionMined(transaction, provider);
+//         console.log("Unstaked successfully !!!");
 
-    }else{
-        console.log("Please Connect Wallet !!!")
-    }
-} catch (error) {
-    toast.warning("Please enter the amount to unstake1");
+//     }else{
+//         console.log("Please Connect Wallet !!!")
+//     }
+// } catch (error) {
+//     toast.warning("Please enter the amount to unstake1");
     
-}
+// }
+nativeWithdraw(Number(arr[2]),listenForTransactionMined)
+// withdraw1(listenForTransactionMined,Number(arr[2]))
+// withdraw2(listenForTransactionMined,Number(arr[2]))
+// }else if(index==1){
 }
 function listenForTransactionMined(transactionResponse: any, provider: ethers.providers.Web3Provider) {
   try {

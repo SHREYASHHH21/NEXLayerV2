@@ -38,11 +38,11 @@ const tabsData = [
     label: "Restake",
     content: <Restake/>,
   },
-  {
-    value: "Awards",
-    label: "Unstake",
-    content: <Unstake/>,
-  }
+  // {
+  //   value: "Awards",
+  //   label: "Unstake",
+  //   content: <Unstake/>,
+  // }
 ];
 
 const index = () => {

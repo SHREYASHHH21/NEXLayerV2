@@ -9,6 +9,8 @@ interface IMetaMaskContext {
   connectWallet: () => void;
   walletAddress: string|null;
   setWalletAddress: React.Dispatch<React.SetStateAction<string|null>>;
+  provider:ethers.providers.Web3Provider|null;
+  setProvider:React.Dispatch<React.SetStateAction<ethers.providers.Web3Provider|null>>;
 }
 
 interface IMetaMaskProvider {
@@ -20,6 +22,7 @@ const Context = React.createContext<IMetaMaskContext>({} as IMetaMaskContext)
 const MetaMaskProvider = ({ children }: IMetaMaskProvider) => {
 
   const [walletAddress, setWalletAddress] = useState<string|null>(null);
+const [provider,setProvider]=useState< ethers.providers.Web3Provider|null>(null)
 
   const getCurrentWalletConnected = async () => {
     if (typeof window != "undefined" && typeof window.ethereum != "undefined"  ) {
@@ -93,7 +96,9 @@ console.log(walletAddress)
       value={{
         connectWallet,
         walletAddress,
-        setWalletAddress
+        setWalletAddress,
+        provider,
+        setProvider
       }}
     >
       {children}

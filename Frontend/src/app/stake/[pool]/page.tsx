@@ -20,6 +20,7 @@ import ClaimTrx from '@/components/claim-transaction';
 import { BackgroundBeams } from '@/components/ui/background-beams';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import { useMetaMaskContext } from '@/providers/metamask-context';
+import { reStake1, reStake2 } from '@/utils';
 
 declare var window: any
 const loadingStates = [
@@ -50,7 +51,8 @@ const Stake: React.FC = () => {
   // const params;
   const params = useParams();
   const index = Number(params.pool);
-const {connectWallet}=useMetaMaskContext()
+  console.log(index)
+  const { connectWallet } = useMetaMaskContext()
 
   let mouseX = useMotionValue(0);
   let mouseY = useMotionValue(0);
@@ -76,27 +78,37 @@ const {connectWallet}=useMetaMaskContext()
   const [open, setOpen] = useState(false);
   const handleClose = () => setOpen(false);
   const handleConfirm = async () => {
-    try {
-      if (window.ethereum !== "undefined") {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        const signer = provider.getSigner();
+    // try {
+    //   if (window.ethereum !== "undefined") {
+    //     const provider = new ethers.providers.Web3Provider(window.ethereum);
+    //     await provider.send("eth_requestAccounts", []);
+    //     const signer = provider.getSigner();
 
-        const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
-        const amountWei = ethers.utils.parseEther(ETH?.toString() ?? "0");
-        let txn = await contract.stake({ value: amountWei })
+    //     const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
+    //     const amountWei = ethers.utils.parseEther(ETH?.toString() ?? "0");
+    //     let txn = await contract.stake({ value: amountWei })
 
-        await listenForTransactionMined(txn, provider);
-        console.log("stakeds successfully")
-        // toast.success("Staked successfully !!!");
-        console.log("Done");
+    //     await listenForTransactionMined(txn, provider);
+    //     console.log("stakeds successfully")
+    //     // toast.success("Staked successfully !!!");
+    //     console.log("Done");
 
-      } else {
-        console.log("Please Connect Wallet !!!");
-      }
-    } catch (error) {
-      // toast.warning("Please enter the amount");
-      console.log(error);
+    //   } else {
+    //     console.log("Please Connect Wallet !!!");
+    //   }
+    // } catch (error) {
+    //   // toast.warning("Please enter the amount");
+    //   console.log(error);
+    // }
+    if (index == 0) {
+      if (ETH) reStake1(listenForTransactionMined, ETH, setOpen)
+    }
+    else if (index == 1) {
+      if (ETH) reStake2(listenForTransactionMined, ETH, setOpen)
+    }
+    else {
+      console.log("Invalid Pool")
+
     }
 
     setOpen(false);
@@ -105,10 +117,10 @@ const {connectWallet}=useMetaMaskContext()
     setOpen(true);
   }
 
-  useEffect(() => {
-    // SetProvider()
-    getBalance()
-  }, [])
+  // useEffect(() => {
+  //   // SetProvider()
+  //   getBalance()
+  // }, [])
 
 
   function listenForTransactionMined(transactionResponse: any, provider: ethers.providers.Web3Provider) {
@@ -127,15 +139,15 @@ const {connectWallet}=useMetaMaskContext()
     }
   }
 
-  const getBalance = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    let addresses = window.ethereum.request({ method: "eth_requestAccounts" });
-    let bal = await provider.getBalance(addresses[0]);
-    let x = (ethers.utils.formatEther(bal))
-    console.log(x)
-    setAvailableBalance(+x);
+  // const getBalance = async () => {
+  //   const provider = new ethers.providers.Web3Provider(window.ethereum);
+  //   let addresses = window.ethereum.request({ method: "eth_requestAccounts" });
+  //   let bal = await provider.getBalance(addresses[0]);
+  //   let x = (ethers.utils.formatEther(bal))
+  //   console.log(x)
+  //   setAvailableBalance(+x);
 
-  }
+  // }
 
 
   const [staked, setStaked] = useState<number>(0)
@@ -271,7 +283,7 @@ const {connectWallet}=useMetaMaskContext()
                 )
               }
             </div>
-            {/* <ClaimTrx token='token1' award='1' callback={() => { }} period='1' setStake={setStaked} stake={staked} key={"Claim Staked Amount"} /> */}
+            {/* <ClaimTrx token='token1' award='1' callback={() => { }} period='1' setStake={setStaked} stake={staked} key={"Claim Staked Amount"}  index={index} /> */}
 
           </div>
         </div>

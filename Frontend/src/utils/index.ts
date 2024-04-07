@@ -4,6 +4,7 @@ import restakeData2 from '@/data/restake2.json';
 import autoStake from '@/data/auto-stake.json';
 import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
+import { timeStamp } from 'console';
 declare var window: any
 
 
@@ -33,8 +34,7 @@ export const nativeStake = async(stake:number,listenForTransactionMined:any) => 
 
 }
 
-export const nativeAutoStake = async(listenForTransactionMined:any,setLoading: React.Dispatch<React.SetStateAction<boolean>>
-) => {
+export const nativeAutoStake = async(listenForTransactionMined:any,setLoading: React.Dispatch<React.SetStateAction<boolean>>,stake:number) => {
     try {
         if (window.ethereum !== "undefined") {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -43,8 +43,9 @@ export const nativeAutoStake = async(listenForTransactionMined:any,setLoading: R
 
         
         const contract = new ethers.Contract(autoStake.addressAutostake, autoStake.abiAutoStake, signer);
-
-        const transaction = await contract.autostaking1();
+        const amountWei = ethers.utils.parseEther(stake?.toString() ?? "0")
+        
+        const transaction = await contract.autostaking1({value:amountWei});
         const receipt = await transaction.wait();
 
         console.log("Transaction confirmed in block:", receipt.blockNumber);
@@ -188,7 +189,7 @@ export const unStake2 = async(stake:number,listenForTransactionMined:any,setOpen
     }
 }
 
-export const nativeUnstake = async(stake:number,listenForTransactionMined:any,setOpen: React.Dispatch<React.SetStateAction<boolean>>)=>{
+export const nativeUnstake = async(stake:number,listenForTransactionMined:any,setOpen?: React.Dispatch<React.SetStateAction<boolean>>)=>{
     try {
       if (window.ethereum !== "undefined") {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -197,8 +198,9 @@ export const nativeUnstake = async(stake:number,listenForTransactionMined:any,se
 
         const contractRestake = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
 
+        const amountWei = ethers.utils.parseEther(stake.toString());
 
-        const txn = await contractRestake.unstake(stake)
+        const txn = await contractRestake.unstake(amountWei)
 
        
         // let txn = await contractRestake.methods.transferTokens(amountWei).call();
@@ -214,7 +216,7 @@ export const nativeUnstake = async(stake:number,listenForTransactionMined:any,se
       // toast.warning("Please enter the amount");
       console.log(error);
     } finally {
-      setOpen(false);
+      setOpen && setOpen(false);
 
     }
 }
@@ -249,7 +251,7 @@ export const getUserClaimableData1 = async(listenForTransactionMined:any)=>{
 
 }
 
-export const withdraw1 = async(arr:string[],listenForTransactionMined:any,index:number,getUserClaimableData1:any)=>{
+export const withdraw1 = async(listenForTransactionMined:any,timestamp:number)=>{
      try {
     if(window.ethereum !== "undefined"){
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -258,10 +260,10 @@ export const withdraw1 = async(arr:string[],listenForTransactionMined:any,index:
 
         const contractRestake = new ethers.Contract(restakeData.addressRestake1, restakeData.abiRestake1, signer);
 
-        let txnArray = await getUserClaimableData1();
-        let currentTimestamp = txnArray[index].timestamp;
+        // let txnArray = await getUserClaimableData1();
+        // let currentTimestamp = txnArray[index].timestamp;
         
-        const transaction = await contractRestake.withdraw(currentTimestamp);  
+        const transaction = await contractRestake.withdraw(timestamp);  
        
         await listenForTransactionMined(transaction, provider);
         console.log("Unstaked successfully !!!");
@@ -304,7 +306,7 @@ export const getUserClaimableData2 = async(listenForTransactionMined:any)=>{
 
 }
 
-export const withdraw2 = async(arr:string[],listenForTransactionMined:any,index:number,getUserClaimableData1:any)=>{
+export const withdraw2 = async(listenForTransactionMined:any,timeStamp:number)=>{
      try {
     if(window.ethereum !== "undefined"){
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -313,10 +315,10 @@ export const withdraw2 = async(arr:string[],listenForTransactionMined:any,index:
 
         const contractRestake = new ethers.Contract(restakeData2.addressRestake2, restakeData2.abiRestake2, signer);
 
-        let txnArray = await getUserClaimableData1();
-        let currentTimestamp = txnArray[index].timestamp;
+        // let txnArray = await getUserClaimableData1();
+        // let currentTimestamp = txnArray[index].timestamp;
         
-        const transaction = await contractRestake.withdraw(currentTimestamp);  
+        const transaction = await contractRestake.withdraw(timeStamp);  
        
         await listenForTransactionMined(transaction, provider);
         console.log("Unstaked successfully !!!");
@@ -338,11 +340,16 @@ export const nativeGetUserClaimableData = async(listenForTransactionMined:any)=>
         const signer = provider.getSigner();
 
         const contractRestake = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
-
+console.log(contractRestake)
 
         let txn = await contractRestake.getUserClaimableToken(); 
+console.log(txn)
 
-        await listenForTransactionMined(txn, provider);
+        // txn.on
+        
+         
+        
+        // await listenForTransactionMined(txn, provider);
         console.log("Fetched Data !!!");
 
         return txn;
@@ -359,7 +366,7 @@ export const nativeGetUserClaimableData = async(listenForTransactionMined:any)=>
 
 }
 
-export const nativeWithdraw = async (arr:string[],listenForTransactionMined:any,index:number,getUserClaimableData1:any) => {
+export const nativeWithdraw = async (timestamp:number,listenForTransactionMined:any) => {
       try {
     if(window.ethereum !== "undefined"){
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -368,10 +375,10 @@ export const nativeWithdraw = async (arr:string[],listenForTransactionMined:any,
 
         const contractRestake = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
 
-        let txnArray = await getUserClaimableData1();
-        let currentTimestamp = txnArray[index].timestamp;
+        // let txnArray = await getUserClaimableData1();
+        // let currentTimestamp = txnArray[index].timestamp;
         
-        const transaction = await contractRestake.withdraw(currentTimestamp);  
+        const transaction = await contractRestake.withdraw(timestamp);  
        
         await listenForTransactionMined(transaction, provider);
         console.log("Unstaked successfully !!!");

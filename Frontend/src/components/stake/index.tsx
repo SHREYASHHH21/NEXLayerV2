@@ -15,7 +15,7 @@ import { RiExchangeLine } from "react-icons/ri";
 import { toast } from 'react-toastify';
 import { MultiStepLoader as Loader } from "@/components/multi-step-loader";
 import { TbTransfer } from "react-icons/tb";
-import { nativeAutoStake } from '@/utils';
+import { nativeAutoStake,nativeStake,nativeGetUserClaimableData } from '@/utils';
 import ClaimTrx from '../claim-transaction';
 
 declare var window: any
@@ -94,7 +94,7 @@ const Stake: React.FC = () => {
     //   // toast.warning("Please enter the amount");
     //   console.log(error);
     // }
-
+    if(ETH) nativeStake(ETH,listenForTransactionMined)
     setOpen(false);
   }
   const handleStakeCFX = () => {
@@ -103,7 +103,7 @@ const Stake: React.FC = () => {
   const handleRestakeCFX = () => {
 
     setLoading(true)
-    nativeAutoStake(listenForTransactionMined,setLoading)
+   if(ETH) nativeAutoStake(listenForTransactionMined,setLoading,ETH)
   }
   const SetProvider = async () => {
     if (window.ethereum) {
@@ -121,10 +121,7 @@ const Stake: React.FC = () => {
     }
   }
 
-  useEffect(() => {
-    // SetProvider()
-    getBalance()
-  }, [])
+  const [data,setData]=useState<any>([])
 
 
   function listenForTransactionMined(transactionResponse: any, provider: ethers.providers.Web3Provider) {
@@ -189,17 +186,42 @@ const Stake: React.FC = () => {
   //   }
 
   // }
-  const getBalance = async () => {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-    let addresses = window.ethereum.request({ method: "eth_requestAccounts" });
-    let bal = await provider.getBalance(addresses[0]);
-    let x = (ethers.utils.formatEther(bal))
-    console.log(x)
-    setAvailableBalance(+x);
+  // const getBalance = async () => {
+  //   const provider = new ethers.providers.Web3Provider(window.ethereum);
+  //   let addresses = window.ethereum.request({ method: "eth_requestAccounts" });
+  //   let bal = await provider.getBalance(addresses[0]);
+  //   let x = (ethers.utils.formatEther(bal))
+  //   console.log(x)
+  //   setAvailableBalance(+x);
 
-  }
+  // }
   useEffect(() => {
     // getBalance()
+    nativeGetUserClaimableData(listenForTransactionMined).then((data)=>{
+      console.log(data)
+      console.log("akhilesh ",typeof data )
+const res=data.map((item:any)=>{
+  const num= parseInt(item[1]._hex,16)
+  console.log(num, "manan")
+  console.log(typeof num, "manan1")
+  if(item[2]==true){
+
+    return {
+      claimedDate:parseInt(item[0]._hex,16),
+     amount:num,
+    accountNumber:""
+    }
+  }else {
+    setData([])
+  }
+
+})
+if(res.length>0){
+  setData( res)
+
+}
+      // setData()
+    }).catch((e)=>{console.log(e)})
   }, [])
 
 const [staked,setStaked] = useState<number>(0)
@@ -343,7 +365,8 @@ const [staked,setStaked] = useState<number>(0)
             )
           }
         </div>
-        {/* <ClaimTrx token='token1' award='1' callback={()=>{}} period='1' setStake={setStaked} stake={staked}    /> */}
+
+        <ClaimTrx token='token1' award='1' callback={()=>{}} period='1' setStake={setStaked} stake={staked}  data={data}   />
 
 
       </div>
