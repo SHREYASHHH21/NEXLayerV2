@@ -253,7 +253,7 @@ const [staked,setStaked] = useState<number>(0)
         <div className='flex   w-11/12  sm:mx-auto justify-between mt-16  '>
           <div className='w-full  bg-gradient-to-r from-indigo-500 to-purple-500  flex flex-col gap-4 p-4 rounded-md'>
             <Conflux
-              text='Conflux'
+              text='Ethereum'
               className='h-12 w-12 shrink-0'
               Base_Class='flex items-center gap-2'
               textClass='text-white mt-0 text-[28px]'

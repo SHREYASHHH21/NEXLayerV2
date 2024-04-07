@@ -162,8 +162,8 @@ const Stake: React.FC = () => {
             setOpen={setOpen}
             onCancel={handleClose}
             onConfirm={handleConfirm}
-            title="Stake Conflux"
-            message="Are you sure you want to stake your Conflux? You can recieve your tokens 7 days after unstaking the amount."
+            title="Stake ethereum"
+            message="Are you sure you want to stake your Etheruem? You can recieve your tokens 7 days after unstaking the amount."
             buttonText="Stake"
           />
 
@@ -172,7 +172,7 @@ const Stake: React.FC = () => {
             <div className='flex   w-11/12  sm:mx-auto justify-between mt-16  '>
               <div className='w-full  bg-gradient-to-r from-indigo-500 to-purple-500  flex flex-col gap-4 p-4 rounded-md'>
                 <Conflux
-                  text='Conflux'
+                  text='ethereum'
                   className='h-12 w-12 shrink-0'
                   Base_Class='flex items-center gap-2'
                   textClass='text-white mt-0 text-[28px]'
@@ -226,7 +226,7 @@ const Stake: React.FC = () => {
               <TbTransfer className='text-[150px] my-auto' />
               <div className='w-full  bg-gradient-to-r from-indigo-500 to-purple-500  flex flex-col gap-4 p-2 rounded-md'>
                 <Conflux
-                  text='xConflux'
+                  text='xEthereum'
                   className='h-12 w-12 shrink-0'
                   Base_Class='flex items-center gap-2'
                   textClass='text-white mt-0 text-[28px]'
