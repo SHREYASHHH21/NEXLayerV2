@@ -7,7 +7,6 @@ import { cn } from "@/utils/cn";
 import ConfirmationDialog from '../alert';
 import { ethers } from 'ethers';
 import stakeData from '@/data/stake.json';
-import RestakeData from '@/data/restake.json';
 import TextInput from '../ui/input/text-input';
 import { useMotionTemplate, useMotionValue, motion } from "framer-motion";
 import { SiBlockchaindotcom } from "react-icons/si";
@@ -16,6 +15,7 @@ import { RiExchangeLine } from "react-icons/ri";
 import { toast } from 'react-toastify';
 import { MultiStepLoader as Loader } from "@/components/multi-step-loader";
 import { TbTransfer } from "react-icons/tb";
+import { nativeAutoStake } from '@/utils';
 import ClaimTrx from '../claim-transaction';
 
 declare var window: any
@@ -103,7 +103,7 @@ const Stake: React.FC = () => {
   const handleRestakeCFX = () => {
 
     setLoading(true)
-    handleAutoRestake()
+    nativeAutoStake(listenForTransactionMined,setLoading)
   }
   const SetProvider = async () => {
     if (window.ethereum) {
@@ -142,42 +142,53 @@ const Stake: React.FC = () => {
       console.log(e);
     }
   }
-  const handleAutoRestake = async () => {
-    // try {
-    //   if (window.ethereum !== "undefined") {
-    //     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //     await provider.send("eth_requestAccounts", []);
-    //     const signer = provider.getSigner();
+  // const handleAutoRestake = async () => {
+  //   try {
+  //     if (window.ethereum !== "undefined") {
+  //       const provider = new ethers.providers.Web3Provider(window.ethereum);
+  //       await provider.send("eth_requestAccounts", []);
+  //       const signer = provider.getSigner();
 
-    //     const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
+  //       // const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
 
-    //     const amountWei = ethers.utils.parseEther((ETH)?.toString() ?? "0");
+  //       // const amountWei = ethers.utils.parseEther((stake)?.toString() ?? "0");
 
-    //     const transaction = await contract.stake({ value: amountWei });
-    //     const receipt = await transaction.wait();
-    //     console.log("Transaction confirmed in block:", receipt.blockNumber);
+  //       // const transaction = await contract.stake({ value: amountWei });
+  //       // const receipt = await transaction.wait();
+  //       // console.log("Transaction confirmed in block:", receipt.blockNumber);
 
-    //     await listenForTransactionMined(transaction, provider);
-    //     console.log("Unstaked successfully !!!");
+  //       // await listenForTransactionMined(transaction, provider);
+  //       // console.log("Unstaked successfully !!!");
 
-    //     const contractRestake = new ethers.Contract(RestakeData.addressRestake, RestakeData.abiRestake, signer);
+  //       // const contractRestake = new ethers.Contract(RestakeData1.addressRestake1, RestakeData1.abiRestake1, signer);
 
-    //     let txn = await contractRestake.transferTokens(amountWei);
-    //     // let txn = await contractRestake.methods.transferTokens(amountWei).call();
-    //     await listenForTransactionMined(txn, provider);
-    //     console.log("Unstaked successfully !!!");
-    //     setLoading(false);
+  //       // let txn = await contractRestake.transferTokens(amountWei);
+  //       // // let txn = await contractRestake.methods.transferTokens(amountWei).call();
+  //       // await listenForTransactionMined(txn, provider);
+  //       // console.log("Unstaked successfully !!!");
+  //       // setLoading(false);
 
-    //   } else {
-    //     toast.info("Please Connect Wallet !!!")
-    //     console.log("Please Connect Wallet !!!");
-    //   }
-    // } catch (error) {
-    //   setLoading(false);
-    //   toast.warning(error as any);
-    // }
+  //       const contract = new ethers.Contract(AutoStake.addressAutostake, AutoStake.abiAutoStake, signer);
 
-  }
+  //       const transaction = await contract.autostaking1();
+  //       const receipt = await transaction.wait();
+
+  //       console.log("Transaction confirmed in block:", receipt.blockNumber);
+        
+  //       await listenForTransactionMined(transaction, provider);
+  //       console.log("AutoRestaked successfully !!!");
+
+
+  //     } else {
+  //       toast.info("Please Connect Wallet !!!")
+  //       console.log("Please Connect Wallet !!!");
+  //     }
+  //   } catch (error) {
+  //     setLoading(false);
+  //     toast.warning(error as any);
+  //   }
+
+  // }
   const getBalance = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     let addresses = window.ethereum.request({ method: "eth_requestAccounts" });
@@ -206,7 +217,7 @@ const [staked,setStaked] = useState<number>(0)
         message="Are you sure you want to stake your Conflux? You can recieve your tokens 7 days after unstaking the amount."
         buttonText="Stake"
       />
-      <ConfirmationDialog
+      {/* <ConfirmationDialog
         open={handleAutoRestakeOpen}
         setOpen={setAutoRestakeOpen}
         onCancel={handleClose}
@@ -214,7 +225,7 @@ const [staked,setStaked] = useState<number>(0)
         title="Auto Restake"
         message="Are you sure you want to opt for Auto Restake? This action cannot be undone."
         buttonText="Auto Stake"
-      />
+      /> */}
       <div className='flex flex-col gap-12 w-full sm:h-full sm:w-4/5 mx-auto p-4  rounded-md mt-12 bg-black/30 border border-purple-600 '>
 
         <div className='flex   w-11/12  sm:mx-auto justify-between mt-16  '>

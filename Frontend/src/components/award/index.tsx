@@ -8,11 +8,13 @@ import HoverPopover from '../ui/hover-card';
 import { IoMdInformationCircleOutline } from 'react-icons/io';
 import { Table1Presentation } from '../data-table';
 import stakeData from '@/data/stake.json';
-import RestakeData from '@/data/restake.json';
+import RestakeData from '@/data/restake1.json';
+import RestakeData2 from '@/data/restake2.json';
 import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
 import { useMotionTemplate, useMotionValue, motion } from "framer-motion";
 import TextInput from '../ui/input/text-input';
+import { timeStamp } from 'console';
 
 declare var window: any
 
@@ -37,8 +39,14 @@ const Award = () => {
     const contractStake = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
 
     const contractRestake = new ethers.Contract(
-      RestakeData.addressRestake,
-      RestakeData.abiRestake,
+      RestakeData.addressRestake1,
+      RestakeData.abiRestake1,
+      signer
+    );
+
+    const contractRestake2 = new ethers.Contract(
+      RestakeData2.addressRestake2,
+      RestakeData2.abiRestake2,
       signer
     );
     const v1 = await contractStake.getTotalSupply()
@@ -74,17 +82,50 @@ const Award = () => {
 
         const transaction = await contract.unstake(stake);
         // burn xcfx ---- pending
-
         await listenForTransactionMined(transaction, provider);
+
+        // let unstakeTimestamp;
+        // contract.on("unboundingPeriodInitiated",(_sender,_amt,_timestamp)=>{
+        //     unstakeTimestamp=_timestamp;
+        // })
+
+        // const txn = await contract.withdraw(unstakeTimestamp);
+        // await listenForTransactionMined(txn, provider);
 
       } else {
         console.log("Please Connect Wallet !!!")
       }
-    } catch (error) {
+    } catch (error) { 
       toast.warning("Please enter the amount to unstake2");
 
     }
   }
+
+  //   const handleUnstakeCFX2 = async () => {
+  //   // handle unstake CFX
+  //   try {
+  //     if (window.ethereum !== "undefined") {
+  //       const provider = new ethers.providers.Web3Provider(window.ethereum);
+  //       await provider.send("eth_requestAccounts", []);
+  //       const signer = provider.getSigner();
+
+  //       const contract = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
+
+  //       // const amountWei = ethers.utils.parseEther(stake.toString());
+
+  //       const transaction = await contract.unstake(stake);
+  //       // burn xcfx ---- pending
+
+  //       await listenForTransactionMined(transaction, provider);
+
+  //     } else {
+  //       console.log("Please Connect Wallet !!!")
+  //     }
+  //   } catch (error) {
+  //     toast.warning("Please enter the amount to unstake2");
+
+  //   }
+  // }
 
   function listenForTransactionMined(transactionResponse: any, provider: any) {
     try {

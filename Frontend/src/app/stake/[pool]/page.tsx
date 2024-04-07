@@ -7,7 +7,7 @@ import { cn } from "@/utils/cn";
 import ConfirmationDialog from '@/components/alert';
 import { ethers } from 'ethers';
 import stakeData from '@/data/stake.json';
-import RestakeData from '@/data/restake.json';
+import RestakeData from '@/data/restake1.json';
 import TextInput from '@/components/ui/input/text-input';
 import { useMotionTemplate, useMotionValue, motion } from "framer-motion";
 import { SiBlockchaindotcom } from "react-icons/si";
