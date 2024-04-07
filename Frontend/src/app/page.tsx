@@ -125,7 +125,7 @@ const members = [
     instagramUrl: '#',
   },
   {
-    name: 'Shreyas Lokhande',
+    name: 'Shreyash Lokhande',
     title: 'Blockchain Devloper',
     avatarUrl: 'https://media.licdn.com/dms/image/D4D03AQFkutRjMEP32w/profile-displayphoto-shrink_400_400/0/1684429800212?e=1718236800&v=beta&t=m2EUxNfuzyBscp-sirANVvb2jW145EI-fFbF-LvJQIw',
     linkedinUrl: 'https://www.linkedin.com/in/shreyash-lokhande-b03651251/',

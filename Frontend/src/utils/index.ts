@@ -392,3 +392,31 @@ export const nativeWithdraw = async (timestamp:number,listenForTransactionMined:
 }
 
 }
+
+export const availableBalance = async()=>{
+      try {
+    if(window.ethereum !== "undefined"){
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+
+        const contractRestake = new ethers.Contract(stakeData.addressStake, stakeData.abiStake, signer);
+
+        // let txnArray = await getUserClaimableData1();
+        // let currentTimestamp = txnArray[index].timestamp;
+        
+        // const transaction = await contractRestake.getUserBalance();  
+        const func= "getUserBalance";
+        const result = await contractRestake.call[func];
+
+        return func;
+    
+    }else{
+        console.log("Please Connect Wallet !!!")
+    }
+} catch (error) {
+    toast.warning("Please enter the amount to unstake1");
+    
+}
+
+}
