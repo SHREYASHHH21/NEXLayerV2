@@ -1,12 +1,32 @@
 import ContentSection from '@/components/content'
-import Stake from '@/components/stake';
-import Restake from '@/components/restake';
+// import Stake from '@/components/stake';
+// import Restake from '@/components/restake';
+// import Unstake from '@/components/award';
 import { BackgroundBeams } from '@/components/ui/background-beams'
 import React from 'react'
-import Award from '@/components/award';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import dynamic from 'next/dynamic';
+const Stake = dynamic(() => import("@/components/stake"), {
+  ssr: false,
+  loading: () => {
+    return <div className="w-full bg-gray-400 animate-pulse h-[80vh]"></div>
+  },
+})
+const Restake = dynamic(() => import("@/components/restake"), {
+  ssr: false,
 
+  loading: () => {
+    return <div className="w-full bg-gray-400 animate-pulse h-[80vh]"></div>
+  },
+})
+const Unstake = dynamic(() => import("@/components/award"), {
+  ssr: false,
+
+  loading: () => {
+    return <div className="w-full bg-gray-400 animate-pulse h-[80vh]"></div>
+  },
+})
 const tabsData = [
   {
     value: "Stake",
@@ -21,7 +41,7 @@ const tabsData = [
   {
     value: "Awards",
     label: "Unstake",
-    content: <Award/>,
+    content: <Unstake/>,
   }
 ];
 
